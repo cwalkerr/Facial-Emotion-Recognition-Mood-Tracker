@@ -27,7 +27,13 @@
       "favicon": ""
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow MoodMirror to access your camera",
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Fab } from "./ui/fab";
 import { Camera } from "lucide-react-native";
 /**
@@ -10,6 +11,9 @@ const CameraFAB: React.FC = () => {
     <Fab
       className="rounded-full mb-12 w-20 h-20 shadow-lg"
       placement="bottom center"
+      onPress={() => {
+        router.push("cameraPreview");
+      }}
     >
       {/* Camera Icon */}
       <Camera size={32} color={"white"} strokeWidth={1.5} />
