@@ -5,18 +5,19 @@ import CameraFAB from "@/components/CameraFab";
 import { View } from "react-native";
 import * as Linking from "expo-linking";
 import { Button, ButtonText } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react-native";
 import { BlurView } from "expo-blur";
 
 /**
- * Front Facing Camera Preview
- * permissions are handled here before showing the camera preview
- * @returns Camera preview with blurred background if permissions are granted
+ * Camera Component
+ * used to display the camera preview and take a photo
+ * also handles permissions
  */
-export default function CameraPreview() {
-  // hook provided by expo-camera to request and check permissions
+export default function Camera() {
   const [permission, requestPermission] = useCameraPermissions();
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const cameraRef = useRef<CameraView>(null);
 
   /**
    * Function to handle permissions
@@ -29,7 +30,7 @@ export default function CameraPreview() {
     }
   };
 
-  // hook to call handlePermissions on mount, or when permission changes
+  // call handlePermissions on mount or when permission changes
   useEffect(() => {
     handlePermissions();
   }, [permission]);
@@ -39,9 +40,9 @@ export default function CameraPreview() {
     return <View />; // TODO: add loading spinner
   }
 
-  // if permisssions have not been granted, show a message with instructions:
-  // if permissions can be asked again, button will call handlePermissions again (which will open the device permission screen)
-  // otherwise, permissions must be handled in the device settings, so button instead opens settings at the apps configuration
+  // permisssions have not been granted, show a message with instructions:
+  // if permissions can be asked again, button will call handlePermissions again
+  // otherwise, permissions must be handled in the device settings
   if (!permission.granted) {
     return (
       <View className="flex-1 justify-center align-center items-center">
@@ -56,7 +57,7 @@ export default function CameraPreview() {
           onPress={() => {
             permission.canAskAgain
               ? handlePermissions()
-              : Linking.openSettings(); // open settings on device
+              : Linking.openSettings();
           }}
         >
           <ButtonText>
@@ -67,7 +68,25 @@ export default function CameraPreview() {
     );
   }
 
-  // once permissions are granted, show the blurred camera preview
+  // sets camera to ready once it loads
+  const onCameraReady = () => {
+    setIsCameraReady(true);
+  };
+
+  // takes a photo of the current camera view, save the base64 to be sent to the server
+  const takePhoto = async () => {
+    if (cameraRef.current && isCameraReady) {
+      try {
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+        });
+        console.log(photo?.base64);
+      } catch (error) {
+        console.error("Error taking photo", error); // TODO: improve error handling
+      }
+    }
+  };
+
   return (
     <View className="flex-1 relative">
       <CameraView
@@ -75,6 +94,8 @@ export default function CameraPreview() {
         facing="front"
         flash="auto"
         autofocus="on"
+        ref={cameraRef}
+        onCameraReady={onCameraReady}
       />
       <BlurView
         intensity={80}
@@ -87,6 +108,9 @@ export default function CameraPreview() {
           <ArrowLeft color={"white"} size={36} />
         </Pressable>
       </Link>
+      {/* Button for taking photo - disabled if camera not ready to
+      prevent uneccessary user action and confusion */}
+      <CameraFAB onPress={takePhoto} disabled={!isCameraReady} />
     </View>
   );
 }

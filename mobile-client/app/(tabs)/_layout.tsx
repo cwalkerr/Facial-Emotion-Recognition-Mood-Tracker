@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Tabs } from "expo-router";
+import { Tabs, router } from "expo-router";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import CameraFAB from "@/components/CameraFab";
 
@@ -34,7 +34,11 @@ export default function TabLayout() {
         />
       </Tabs>
       {/* Opens Camera Preview - Positioned centre of tabs raised*/}
-      <CameraFAB />
+      <CameraFAB
+        onPress={() => {
+          router.push("cameraPreview");
+        }}
+      />
     </>
   );
 }
