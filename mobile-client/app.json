@@ -31,7 +31,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow MoodMirror to access your camera",
+          "cameraPermission": "Allow MoodMirror to access your camera"
         }
       ]
     ],

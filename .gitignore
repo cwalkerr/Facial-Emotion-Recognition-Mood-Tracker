@@ -1,0 +1,29 @@
+**/node_modules/
+mobile-client/.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+app-example/
+mobile-client/expo-env.d.ts
+**/.env
+api/test_images/
+# macOS
+.DS_Store
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+.venv/
+env/
+venv/

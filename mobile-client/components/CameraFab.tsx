@@ -1,7 +1,7 @@
 import { Fab } from "./ui/fab";
 import { Camera } from "lucide-react-native";
 
-// add onPress prop to CameraFAB
+// add props to fab
 interface CameraFABProps {
   onPress: () => void;
   disabled?: boolean;

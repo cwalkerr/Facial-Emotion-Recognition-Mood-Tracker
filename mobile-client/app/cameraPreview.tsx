@@ -8,6 +8,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react-native";
 import { BlurView } from "expo-blur";
+import uploadPhoto from "@/services/uploadPhoto";
 
 /**
  * Camera Component
@@ -23,7 +24,7 @@ export default function Camera() {
    * Function to handle permissions
    */
   const handlePermissions = async () => {
-    if (!permission) return; // return early if permission object is not available yet - useEffect will call again when it is
+    if (!permission) return; // permission object is not available yet - useEffect will call again when it is
 
     if (!permission.granted && permission.canAskAgain) {
       await requestPermission(); // this will opem the device specific permission screen
@@ -41,8 +42,9 @@ export default function Camera() {
   }
 
   // permisssions have not been granted, show a message with instructions:
-  // if permissions can be asked again, button will call handlePermissions again
+  // if permissions can be asked again, call handlePermissions again
   // otherwise, permissions must be handled in the device settings
+  // TODO: permissions screen should be a separate component
   if (!permission.granted) {
     return (
       <View className="flex-1 justify-center align-center items-center">
@@ -73,14 +75,16 @@ export default function Camera() {
     setIsCameraReady(true);
   };
 
-  // takes a photo of the current camera view, save the base64 to be sent to the server
+  // takes a photo of the current camera view
   const takePhoto = async () => {
     if (cameraRef.current && isCameraReady) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
           base64: true,
         });
-        console.log(photo?.base64);
+        if (photo && photo.base64) {
+          await uploadPhoto(photo.base64);
+        }
       } catch (error) {
         console.error("Error taking photo", error); // TODO: improve error handling
       }
