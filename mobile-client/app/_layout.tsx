@@ -12,8 +12,8 @@ export default function RootLayout() {
             headerShown: false,
           }}
         >
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="cameraPreview" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(public)" />
         </Stack>
       </SafeAreaProvider>
     </GluestackUIProvider>

@@ -1,6 +1,6 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Link } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, ActivityIndicator } from "react-native";
 import CameraFAB from "@/components/CameraFab";
 import { View } from "react-native";
 import * as Linking from "expo-linking";
@@ -38,7 +38,7 @@ export default function Camera() {
 
   // permission object still loading after handlePermissions, return loading spinner
   if (!permission) {
-    return <View />; // TODO: add loading spinner
+    return <ActivityIndicator size={"small"} />;
   }
 
   // permisssions have not been granted, show a message with instructions:
