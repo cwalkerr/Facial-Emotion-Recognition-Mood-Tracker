@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from endpoints.images import router as images_router
+from api.endpoints.predict import router as predict_router
 
 app = FastAPI()
 
-# CORS
+# CORS - not recommended for production adding all origins/methods/headers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,8 +13,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    return {"message": "Listening"}
+
 # Routes
-app.include_router(images_router, prefix="/api")
+app.include_router(predict_router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn

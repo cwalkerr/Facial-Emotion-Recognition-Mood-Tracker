@@ -13,7 +13,7 @@ class Base(DeclarativeBase):
         datetime.time: TIME(timezone=True),
     }
 
-class EmotionEnum(enum.Enum):
+class Emotion(enum.Enum):
     HAPPY = 1
     SAD = 2
     ANGRY = 3
@@ -25,7 +25,7 @@ class EmotionEnum(enum.Enum):
     def __str__(self):
         return self.name.capitalize()
 
-class LocationEnum(enum.Enum):
+class Location(enum.Enum):
     HOME = 'Home'
     WORK = 'Work'
     SCHOOL = 'School'
@@ -49,9 +49,9 @@ class Reading(Base):
     
     id: Mapped[int] = mapped_column('reading_id', primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    emotion: Mapped[EmotionEnum]
+    emotion: Mapped[Emotion]
     datetime: Mapped[datetime.datetime]
-    location: Mapped[Optional[LocationEnum]]
+    location: Mapped[Optional[Emotion]]
     note: Mapped[Optional[str]]
 
 
