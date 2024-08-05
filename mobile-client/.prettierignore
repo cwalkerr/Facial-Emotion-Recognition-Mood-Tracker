@@ -1,0 +1,17 @@
+node_modules/**
+package.json
+yarn.lock
+ios/**
+android/**
+assets/**
+.vscode
+.expo-shared
+.prettirrc
+.eslintrc.js
+metro.config.js
+package-lock.json
+babel.config.js
+app.json
+tsconfig.json
+global.css
+patches/**
