@@ -14,13 +14,13 @@ class Base(DeclarativeBase):
     }
 
 class Emotion(enum.Enum):
-    HAPPY = 1
-    SAD = 2
-    ANGRY = 3
-    SCARED = 4
-    SURPRISED = 5
-    DISGUSTED = 6
-    NEUTRAL = 7
+    ANGRY = 0
+    DISGUSTED = 1
+    SCARED = 2
+    HAPPY = 3
+    NEUTRAL = 4
+    SAD = 5
+    SUPRISED = 6
     
     def __str__(self):
         return self.name.capitalize()

@@ -63,6 +63,7 @@ export default function Camera(): JSX.Element {
       getPictureSizes();
     }
 
+    // eslint-disable-next-line prettier/prettier
     const getClosestSize = (sizes: string[], desiredWidth: number, desiredHeight: number): string => {
       let closestSize: string = '';
       let closestDifference: number = Infinity;

@@ -1,15 +1,21 @@
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from forwardImageToServing import forward_to_serving
+from preprocessing.preprocessImage import preprocess
+from services.forwardImageToServing import forward_to_serving
 
 router = APIRouter()
 
+
+class ImageRequest(BaseModel):
+    image: str
+
 # API endpoint to upload an image
 @router.post("/predict")
-async def upload_image( image: str):
+def upload_image( request: ImageRequest):
     try:
-        result = forward_to_serving(image)  # forward image to TensorFlow Serving
+        preprocessed_image = preprocess(request.image)
+        result = forward_to_serving(preprocessed_image)  # forward image to TensorFlow Serving as np array
     
         prediction, confidence = result["prediction"], result["confidence"]
         
