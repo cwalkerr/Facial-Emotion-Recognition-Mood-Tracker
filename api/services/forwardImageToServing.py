@@ -7,7 +7,7 @@ from db.models import Emotion
 
 load_dotenv()
  
-def forward_to_serving(imageData: np.ndarray) -> dict:
+def forward_to_serving(image_data: np.ndarray) -> dict:
     """
     Forwards image data to TensorFlow Serving, running in a Docker container
     
@@ -21,12 +21,12 @@ def forward_to_serving(imageData: np.ndarray) -> dict:
     ValueError: If the image shape is not (48, 48, 1)
     """    
     # Do not proceed if the image shape is not (48, 48, 1)
-    if imageData.shape != (48, 48, 1):
-        raise ValueError(f"Unexpected image shape: {imageData.shape} - Expected: (48, 48, 1)")   
+    if image_data.shape != (48, 48, 1):
+        raise ValueError(f"Unexpected image shape: {image_data.shape} - Expected: (48, 48, 1)")   
     try:
         response = requests.post(
             os.getenv("MODEL_PREDICT_URL"), # this is the url the docker container is running on
-            json={"instances": [{"input_layer_1": imageData.tolist()}]}, # must match the input layer name in the model and must be a list
+            json={"instances": [{"input_layer_1": image_data.tolist()}]}, # must match the input layer name in the model and must be a list
         )
                 
         prediction = response.json()

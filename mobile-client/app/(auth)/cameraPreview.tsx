@@ -69,7 +69,7 @@ export default function Camera(): JSX.Element {
       let closestDifference: number = Infinity;
 
       for (const size of sizes) {
-        const [width, height] = size.split('x').map(Number); // "1280x720" -> [1280x720]
+        const [width, height] = size.split('x').map(Number); // "1280x720" -> [1280, 720]
         const difference = Math.abs(width - desiredWidth) + Math.abs(height - desiredHeight);
 
         // find the size with the smallest difference to 1280x720
@@ -127,9 +127,11 @@ export default function Camera(): JSX.Element {
         });
         if (photo && photo.base64) {
           await uploadPhoto(photo.base64);
+        } else {
+          throw new Error('No photo taken');
         }
       } catch (error) {
-        console.error('Error taking photo', error); // TODO: improve error handling
+        console.error('Error taking photo: ', error); // TODO: improve error handling
       }
     }
   };
@@ -147,7 +149,7 @@ export default function Camera(): JSX.Element {
       />
       <BlurView
         intensity={80}
-        experimentalBlurMethod="dimezisBlurView" // allows the blur to work on Android - experimental so may be better way around this
+        experimentalBlurMethod="dimezisBlurView" // allows the blur to work on Android - in testing, its not as good as on iOS need to find a better solution
         className="absolute top-0 left-0 w-full h-full"
       />
       {/* Back icon */}
