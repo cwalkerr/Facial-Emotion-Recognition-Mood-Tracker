@@ -1,7 +1,7 @@
-import React from "react";
-import { Tabs, router } from "expo-router";
-import { TabBarIcon } from "@/components/navigation/TabBarIcon";
-import CameraFAB from "@/components/CameraFab";
+import React from 'react';
+import { Href, Tabs, router } from 'expo-router';
+import { TabBarIcon } from '@/components/navigation/TabBarIcon';
+import CameraFAB from '@/components/CameraFab';
 
 export default function TabLayout() {
   return (
@@ -11,22 +11,21 @@ export default function TabLayout() {
           headerShown: false,
           tabBarShowLabel: false,
           tabBarStyle: {
-            backgroundColor: "transparent",
+            backgroundColor: 'transparent',
             borderTopWidth: 0,
           },
-        }}
-      >
+        }}>
         <Tabs.Screen
           name="index"
           options={{
-            title: "Home",
+            title: 'Home',
             tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           }}
         />
         <Tabs.Screen
           name="stats"
           options={{
-            title: "Stats",
+            title: 'Stats',
             tabBarIcon: ({ color }) => (
               <TabBarIcon name="stats-chart" color={color} />
             ),
@@ -36,7 +35,7 @@ export default function TabLayout() {
       {/* Opens Camera Preview - Positioned centre of tabs raised*/}
       <CameraFAB
         onPress={() => {
-          router.push("cameraPreview");
+          router.push('cameraPreview' as Href);
         }}
       />
     </>

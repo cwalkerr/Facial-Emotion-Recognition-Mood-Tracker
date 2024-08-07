@@ -1,7 +1,8 @@
-import { Stack } from "expo-router";
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import "../global.css";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import React from 'react';
+import { Stack } from 'expo-router';
+import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import '../global.css';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function RootLayout() {
   return (
@@ -10,8 +11,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-          }}
-        >
+          }}>
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(public)" />
         </Stack>
