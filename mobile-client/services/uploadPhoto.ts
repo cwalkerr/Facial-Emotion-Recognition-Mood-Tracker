@@ -7,7 +7,13 @@
  * ive tried wrappiing the blob in a File object as well as using XMLHttpRequest,
  * Axios and Fetch, and omitting/including headers and different form data configurations.
  */
-const uploadPhoto = async (photoBase64: string) => {
+
+interface PredictionResponse {
+  prediction: string;
+  confidence: number;
+}
+
+const uploadPhoto = async (photoBase64: string): Promise<PredictionResponse> => {
   try {
     const response = await fetch(process.env.EXPO_PUBLIC_API_DEV_URL + '/predict', {
       method: 'POST',
@@ -16,11 +22,14 @@ const uploadPhoto = async (photoBase64: string) => {
       },
       body: JSON.stringify({ image: photoBase64 }),
     });
-    const result = await response.json();
-
-    console.log('Photo uploaded', result);
+    if (!response.ok) {
+      throw new Error('Failed to retrevie prediction');
+    }
+    const result: PredictionResponse = await response.json();
+    return result;
   } catch (error) {
-    console.error('Error uploading photo', error);
+    console.log(error);
+    return { prediction: 'error', confidence: 0 };
   }
 };
 export default uploadPhoto;

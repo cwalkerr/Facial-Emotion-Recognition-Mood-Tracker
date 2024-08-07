@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ]
+, "assets/emojis/disgust.jsx", "assets/emojis/angry.jsx", "assets/emojis/angry.jsx"  ]
 }

@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Link } from 'expo-router';
+import { Href, Link, router } from 'expo-router';
 import React from 'react';
-import { Pressable, Text, ActivityIndicator } from 'react-native';
+import { Pressable, Text, ActivityIndicator, Alert } from 'react-native';
 import CameraFAB from '@/components/CameraFab';
 import { View } from 'react-native';
 import * as Linking from 'expo-linking';
@@ -15,14 +15,14 @@ import uploadPhoto from '@/services/uploadPhoto';
  * Camera Component
  * used to display the camera preview, take photos and handle permissions
  */
-export default function Camera(): JSX.Element {
+export default function Camera(): React.JSX.Element {
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [pictureSize, setPictureSize] = useState<string | undefined>(undefined);
   const cameraRef = useRef<CameraView>(null);
 
   // checks if permissions are granted on mount, and if not, requests them
-  const handlePermissions = useCallback(async () => {
+  const handlePermissions = useCallback(async (): Promise<void> => {
     if (!permission) return; // permission object is not available yet - useEffect will call again when it is
 
     if (!permission.granted && permission.canAskAgain) {
@@ -48,7 +48,7 @@ export default function Camera(): JSX.Element {
 
         for (const size of sizes) {
           if (size === '1280x720' || size === '640x480') {
-            // take either of these if available, first prefered, array starts with largest size
+            // take either of these if available, first prefered, array starts with largest size - 640x480 not tested so may not be great
             chosenSize = size;
             break;
           }
@@ -63,14 +63,19 @@ export default function Camera(): JSX.Element {
       getPictureSizes();
     }
 
-    // eslint-disable-next-line prettier/prettier
-    const getClosestSize = (sizes: string[], desiredWidth: number, desiredHeight: number): string => {
+    // move this to seperate file? it is part of the useEffect though?
+    const getClosestSize = (
+      sizes: string[],
+      desiredWidth: number,
+      desiredHeight: number
+    ): string => {
       let closestSize: string = '';
       let closestDifference: number = Infinity;
 
       for (const size of sizes) {
         const [width, height] = size.split('x').map(Number); // "1280x720" -> [1280, 720]
-        const difference = Math.abs(width - desiredWidth) + Math.abs(height - desiredHeight);
+        const difference =
+          Math.abs(width - desiredWidth) + Math.abs(height - desiredHeight);
 
         // find the size with the smallest difference to 1280x720
         if (difference < closestDifference) {
@@ -96,7 +101,9 @@ export default function Camera(): JSX.Element {
       <View className="flex-1 justify-center align-center items-center">
         <Text>
           Camera permissions are required to use this app.{' '}
-          {permission.canAskAgain ? 'Please grant them.' : 'Please enable them in the settings.'}
+          {permission.canAskAgain
+            ? 'Please grant them.'
+            : 'Please enable them in the settings.'}
         </Text>
         <Button
           className="mt-4 rounded-md"
@@ -107,7 +114,9 @@ export default function Camera(): JSX.Element {
               Linking.openSettings();
             }
           }}>
-          <ButtonText>{permission.canAskAgain ? 'Grant Permissions' : 'Open Settings'}</ButtonText>
+          <ButtonText>
+            {permission.canAskAgain ? 'Grant Permissions' : 'Open Settings'}
+          </ButtonText>
         </Button>
       </View>
     );
@@ -119,16 +128,24 @@ export default function Camera(): JSX.Element {
   };
 
   // takes a photo of the current camera view
-  const takePhoto = async () => {
-    if (cameraRef.current && isCameraReady) {
+  const takePhoto = async (): Promise<void> => {
+    let response;
+    if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
           base64: true,
         });
         if (photo && photo.base64) {
-          await uploadPhoto(photo.base64);
+          response = await uploadPhoto(photo.base64); // send the photo to the server for prediction
         } else {
           throw new Error('No photo taken');
+        }
+        // 'error' is a string returned by the uploadPhoto, probably a better way to handle this
+        if (response.prediction !== 'error') {
+          // navigate to results page with the emotion as a parameter - no need for state for this
+          router.push(`/results?emotion=${response.prediction}` as Href);
+        } else {
+          Alert.alert('Error', 'Failed to retrieve prediction, please try again');
         }
       } catch (error) {
         console.error('Error taking photo: ', error); // TODO: improve error handling
@@ -145,7 +162,7 @@ export default function Camera(): JSX.Element {
         autofocus="on"
         ref={cameraRef}
         onCameraReady={onCameraReady}
-        {...(pictureSize && { pictureSize })} // only pass pictureSize if it is defined
+        {...(pictureSize && { pictureSize })} // only pass pictureSize if it is defined, when undefined it will use the default size
       />
       <BlurView
         intensity={80}
