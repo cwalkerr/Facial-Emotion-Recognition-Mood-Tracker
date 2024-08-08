@@ -17,7 +17,6 @@ export default function SignUp() {
   const [password, setPassword] = useState<string>('');
   const [pendingVerification, setPendingVerification] = useState<boolean>(false);
   const [code, setCode] = useState<string>('');
-  const [error, setError] = useState<ClerkAPIError | null>(null);
   /**
    * Basic error handling for SignUp
    * @param e: Error, likely a ClerkAPIError
@@ -25,19 +24,14 @@ export default function SignUp() {
    */
   const handleSignUpError = (e: unknown): void => {
     if (isClerkAPIResponseError(e)) {
-      setError(e.errors[0]); // ClerkAPIError returns array of errors, just check first one for now
-      console.log(
-        'ClerkAPIError: ',
-        error?.code,
-        ' - ',
-        error?.longMessage || error?.message,
-        ' - ',
-        error?.meta
-      );
-      // long message is preferred for user
-      return Alert.alert(
-        error?.longMessage || error?.message || 'An error occurred'
-      );
+      const firstError: ClerkAPIError = e.errors[0];
+      if (
+        // this particular error message is not very user friendly, rest i can find are ok
+        firstError.longMessage === 'email_address must be a valid email address.'
+      ) {
+        return Alert.alert('Please enter a valid email address.');
+      }
+      return Alert.alert(firstError.longMessage || firstError.message);
     } else {
       console.error('Unknown Error: ', e);
       return Alert.alert('An error occurred, please try again.');
