@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useState } from 'react';
-import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
+import { isClerkAPIResponseError, useSignUp, useAuth } from '@clerk/clerk-expo';
 import { ClerkAPIError } from '@clerk/types';
 import { Href, router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import uploadId from '@/services/api/uploadClerkId';
 
 export default function SignUp() {
-  // these states may seem confusing, to clarify:
   // isLoaded indicates whether Clerk has finished initialising and its components are ready to use
   // isLoading is used to track the state of ongoing sign up or verificaion processes initiated by the user
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -17,25 +17,26 @@ export default function SignUp() {
   const [password, setPassword] = useState<string>('');
   const [pendingVerification, setPendingVerification] = useState<boolean>(false);
   const [code, setCode] = useState<string>('');
+  const { getToken } = useAuth();
   /**
    * Basic error handling for SignUp
-   * @param e: Error, likely a ClerkAPIError
+   * @param e: Error, likely a ClerkAPIError or JWT error
    * @returns Alert to user with error message
+   * this is a mess need to sort it out later
    */
   const handleSignUpError = (e: unknown): void => {
     if (isClerkAPIResponseError(e)) {
       const firstError: ClerkAPIError = e.errors[0];
       if (
-        // this particular error message is not very user friendly, rest i can find are ok
         firstError.longMessage === 'email_address must be a valid email address.'
       ) {
         return Alert.alert('Please enter a valid email address.');
       }
       return Alert.alert(firstError.longMessage || firstError.message);
-    } else {
-      console.error('Unknown Error: ', e);
-      return Alert.alert('An error occurred, please try again.');
+    } else if (e instanceof Error && e.message.includes('Unauthorized')) {
+      return Alert.alert('Authentication failed, please try again later.');
     }
+    return Alert.alert('An error occurred, please try again.');
   };
 
   /**
@@ -71,7 +72,6 @@ export default function SignUp() {
       const completeSignUp = await signUp.attemptEmailAddressVerification({
         code,
       });
-
       if (completeSignUp.status === 'complete') {
         await setActive({ session: completeSignUp.createdSessionId }); // set active session
 
@@ -82,7 +82,13 @@ export default function SignUp() {
         // store the clerk ID in secure storage
         await SecureStore.setItemAsync('clerkUserId', clerkUserId);
 
-        router.replace('(auth)' as Href); // redirect to home page after successful sign up
+        const token = await getToken(); // get the JWT token
+        if (token === null) {
+          throw new Error('No token found');
+        }
+        await uploadId(clerkUserId, token); // upload the clerk ID to the API to be stored in db
+
+        router.replace('(auth)' as Href); // redirect to home page after successful sign up and ID upload
       }
     } catch (e) {
       handleSignUpError(e);

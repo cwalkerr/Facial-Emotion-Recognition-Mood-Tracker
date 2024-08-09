@@ -12,7 +12,7 @@ class ImageRequest(BaseModel):
 
 # API endpoint to upload an image
 @router.post("/predict")
-def upload_image( request: ImageRequest):
+def upload_image( request: ImageRequest) -> JSONResponse:
     try:
         preprocessed_image = preprocess(request.image)
         result = forward_to_serving(preprocessed_image)  # forward image to TensorFlow Serving as np array

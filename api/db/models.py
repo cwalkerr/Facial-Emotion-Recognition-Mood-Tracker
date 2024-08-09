@@ -1,9 +1,10 @@
 import datetime
 import enum
-from sqlalchemy import TIME, TIMESTAMP, ForeignKey, String
+from sqlalchemy import TIME, TIMESTAMP, ForeignKey, String, Integer, Enum
 from sqlalchemy.orm import DeclarativeBase
 from typing import List, Optional
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
+
 
 # Define the DB tables and their columns
 
@@ -38,30 +39,27 @@ class Location(enum.Enum):
 class User(Base):
     __tablename__ = "users"
     
-    id: Mapped[int] = mapped_column('user_id', primary_key=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True)
-    password: Mapped[str]
-    notification_start_time: Mapped[datetime.time]
-    notification_end_time: Mapped[datetime.time]
+    id: Mapped[int] = mapped_column(name='user_id', primary_key=True)
+    clerk_id: Mapped[str] = mapped_column(String(255))
+    notification_start_time: Mapped[Optional[datetime.time]] 
+    notification_end_time: Mapped[Optional[datetime.time]]
 
 class Reading(Base):
     __tablename__ = "readings"
     
-    id: Mapped[int] = mapped_column('reading_id', primary_key=True)
+    id: Mapped[int] = mapped_column(name='reading_id', primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     emotion: Mapped[Emotion]
     datetime: Mapped[datetime.datetime]
-    location: Mapped[Optional[Emotion]]
+    location: Mapped[Optional[Location]]
     note: Mapped[Optional[str]]
-
 
 class GlobalAccuracyCount(Base):
     __tablename__ = "global_accuracy_count"
     
-    id: Mapped[int] = mapped_column('count_id', primary_key=True)
-    accurate_readings: Mapped[int]
+    id: Mapped[int] = mapped_column(name='count_id', primary_key=True)
+    accurate_readings: Mapped[int]    
     failed_readings: Mapped[int]
-
 
 
     
