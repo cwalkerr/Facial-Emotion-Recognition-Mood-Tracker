@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import uploadPhoto from '@/services/api/uploadPhoto';
+import { useAuth } from '@clerk/clerk-expo';
 
 /**
  * Camera Component
@@ -20,6 +21,7 @@ export default function Camera(): React.JSX.Element {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [pictureSize, setPictureSize] = useState<string | undefined>(undefined);
   const cameraRef = useRef<CameraView>(null);
+  const { getToken } = useAuth();
 
   // checks if permissions are granted on mount, and if not, requests them
   const handlePermissions = useCallback(async (): Promise<void> => {
@@ -136,7 +138,11 @@ export default function Camera(): React.JSX.Element {
           base64: true,
         });
         if (photo && photo.base64) {
-          response = await uploadPhoto(photo.base64); // send the photo to the server for prediction
+          const token = await getToken();
+          if (!token) {
+            throw new Error('No token found');
+          }
+          response = await uploadPhoto(photo.base64, token); // send the photo to the server for prediction
         } else {
           throw new Error('No photo taken');
         }

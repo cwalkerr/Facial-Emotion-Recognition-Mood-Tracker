@@ -13,12 +13,16 @@ interface PredictionResponse {
   confidence: number;
 }
 
-const uploadPhoto = async (photoBase64: string): Promise<PredictionResponse> => {
+const uploadPhoto = async (
+  photoBase64: string,
+  token: string
+): Promise<PredictionResponse> => {
   try {
     const response = await fetch(process.env.EXPO_PUBLIC_API_DEV_URL + '/predict', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ image: photoBase64 }),
     });

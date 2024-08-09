@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, Response
+from fastapi import APIRouter, Depends, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from services.verifyToken import verify_token
@@ -17,14 +17,13 @@ class IDRequest(BaseModel):
 async def upload_id(request: IDRequest, token: HTTPAuthorizationCredentials = Depends(security)) -> Response:
     try:
         verification = verify_token(token.credentials)
-        if (verification["valid"]): # check if valid token is true
-            # add the users clerk id to the database
-            async with Session() as session:
-                    new_user = User(clerk_id=request.id)
-                    session.add(new_user)
-                    await session.commit()
-            return Response(status_code=200) # just return 200 if success no need for any data
-        else :
-            return JSONResponse(content={"message": verification["message"]}, status_code=401) # return 401 if token is invalid with a message
+        if (verification["valid"] == False): # check if token is invalid
+            return JSONResponse(content={"message": verification["message"]}, status_code=401)
+        # add clerk id to the database
+        async with Session() as session:
+            new_user = User(clerk_id=request.id)
+            session.add(new_user)
+            await session.commit()
+        return Response(status_code=200) # just return 200 if success no need for any data
     except Exception as error:
         return JSONResponse(content={"message": str(error)}, status_code=400)

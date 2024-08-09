@@ -83,7 +83,7 @@ export default function SignUp() {
         await SecureStore.setItemAsync('clerkUserId', clerkUserId);
 
         const token = await getToken(); // get the JWT token
-        if (token === null) {
+        if (!token) {
           throw new Error('No token found');
         }
         await uploadId(clerkUserId, token); // upload the clerk ID to the API to be stored in db

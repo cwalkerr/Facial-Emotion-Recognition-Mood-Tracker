@@ -1,19 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from preprocessing.preprocessImage import preprocess
 from services.forwardImageToServing import forward_to_serving
+from services.verifyToken import verify_token
 
 router = APIRouter()
-
+security = HTTPBearer()
 
 class ImageRequest(BaseModel):
     image: str
 
 # API endpoint to upload an image
 @router.post("/predict")
-def upload_image( request: ImageRequest) -> JSONResponse:
+def upload_image( request: ImageRequest, token: HTTPAuthorizationCredentials = Depends(security)) -> JSONResponse:
     try:
+        verification = verify_token(token.credentials)
+        if (verification["valid"] == False):
+            return JSONResponse(content={"message": verification["message"]}, status_code=401)
+        
         preprocessed_image = preprocess(request.image)
         result = forward_to_serving(preprocessed_image)  # forward image to TensorFlow Serving as np array
     
