@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from endpoints.predict import router as predict_router
-from api.endpoints.upload_id import router as id_router
+from endpoints.upload_id import router as id_router
 
 app = FastAPI()
 

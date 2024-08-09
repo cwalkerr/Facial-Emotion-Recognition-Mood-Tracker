@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, Text, TextInput, Alert, ActivityIndicator } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, TextInput, ActivityIndicator } from 'react-native';
 import { Button, ButtonText } from '@/components/ui/button';
 import { useState } from 'react';
-import { isClerkAPIResponseError, useSignUp, useAuth } from '@clerk/clerk-expo';
-import { ClerkAPIError } from '@clerk/types';
+import { useSignUp, useAuth } from '@clerk/clerk-expo';
 import { Href, router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import uploadId from '@/services/api/uploadClerkId';
+import handleAuthError from '@/services/errors/handleAuthError';
 
 export default function SignUp() {
   // isLoaded indicates whether Clerk has finished initialising and its components are ready to use
@@ -19,33 +19,12 @@ export default function SignUp() {
   const [code, setCode] = useState<string>('');
   const { getToken } = useAuth();
   /**
-   * Basic error handling for SignUp
-   * @param e: Error, likely a ClerkAPIError or JWT error
-   * @returns Alert to user with error message
-   * this is a mess need to sort it out later
-   */
-  const handleSignUpError = (e: unknown): void => {
-    if (isClerkAPIResponseError(e)) {
-      const firstError: ClerkAPIError = e.errors[0];
-      if (
-        firstError.longMessage === 'email_address must be a valid email address.'
-      ) {
-        return Alert.alert('Please enter a valid email address.');
-      }
-      return Alert.alert(firstError.longMessage || firstError.message);
-    } else if (e instanceof Error && e.message.includes('Unauthorized')) {
-      return Alert.alert('Authentication failed, please try again later.');
-    }
-    return Alert.alert('An error occurred, please try again.');
-  };
-
-  /**
    * Sends a request to Clerk to sign up a new user
    * sends email verification code if successful
    */
-  const onSignUpPress = async (): Promise<void> => {
-    if (!isLoaded) return; // don't attempt to sign up if Clerk hasn't loaded yet
+  const onSignUpPress = useCallback(async (): Promise<void> => {
     setIsLoading(true); // user has initiated sign up process
+    if (!isLoaded) return; // don't attempt to sign up if Clerk hasn't loaded yet
 
     try {
       await signUp.create({
@@ -55,18 +34,18 @@ export default function SignUp() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (e) {
-      handleSignUpError(e);
+      handleAuthError(e);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoaded, emailAddress, password]);
 
   /**
    * Verify the email address via code sent to user
    */
   const onPressVerify = async (): Promise<void> => {
-    if (!isLoaded) return;
     setIsLoading(true);
+    if (!isLoaded) return;
 
     try {
       const completeSignUp = await signUp.attemptEmailAddressVerification({
@@ -91,7 +70,7 @@ export default function SignUp() {
         router.replace('(auth)' as Href); // redirect to home page after successful sign up and ID upload
       }
     } catch (e) {
-      handleSignUpError(e);
+      handleAuthError(e);
     } finally {
       setIsLoading(false);
     }

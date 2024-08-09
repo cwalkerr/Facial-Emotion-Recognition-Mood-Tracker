@@ -26,9 +26,9 @@ const AuthConditionalRender = () => {
     if (isSignedIn) {
       router.replace('(auth)' as Href);
     } else {
-      // this should work wihtout the /signup, (public)/_layout.tsx should deal with routing to its first screen,
+      // this should work wihtout the /login, (public)/_layout.tsx should deal with routing to its first screen,
       // but get unmatched route error without it
-      router.replace('(public)/signup' as Href);
+      router.replace('(public)/login' as Href);
     }
   }, [isSignedIn]);
   // Return Slot to ensure rendering root layout before redirecting - error without it
