@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { View, Text, TextInput, ActivityIndicator } from 'react-native';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
 import { useState } from 'react';
 import { useSignUp, useAuth } from '@clerk/clerk-expo';
 import { Href, router } from 'expo-router';

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Href, router, Slot, usePathname } from 'expo-router';
-import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
+import { GluestackUIProvider } from '@/components/ui/gluestack-imports/gluestack-ui-provider';
 import '../global.css';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {

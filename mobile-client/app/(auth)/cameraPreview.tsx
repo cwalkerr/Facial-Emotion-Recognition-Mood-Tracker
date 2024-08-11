@@ -5,7 +5,7 @@ import { Pressable, Text, ActivityIndicator, Alert } from 'react-native';
 import CameraFAB from '@/components/CameraFab';
 import { View } from 'react-native';
 import * as Linking from 'expo-linking';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';

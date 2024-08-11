@@ -13,7 +13,6 @@ def verify_token(token: str) -> dict:
     try:
         jwt.decode(token, JWT_PUBLIC_KEY, algorithms=[ALGORITHM])
         return {"valid": True}
-    # covers most of the possible errors that can occur when decoding a token
     except ExpiredSignatureError:
         return {'valid': False, 'message': 'Unauthorised: Token expired'}
     except InvalidTokenError as e:

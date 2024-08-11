@@ -6,7 +6,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import { Button, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
 import { Href, Link, router } from 'expo-router';
 import { useSignIn } from '@clerk/clerk-expo';
 import handleAuthError from '@/services/errors/handleAuthError';
