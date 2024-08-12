@@ -12,7 +12,6 @@ interface EmojiProps {
   emotion: string;
   height: number;
   width: number;
-  containerStyles?: string;
   textStyles?: string;
 }
 
@@ -21,7 +20,6 @@ const getEmoji = ({
   emotion,
   height,
   width,
-  containerStyles,
   textStyles,
 }: EmojiProps): React.JSX.Element => {
   let EmojiComponent;
@@ -53,10 +51,10 @@ const getEmoji = ({
   }
   // adds the emoji and text to a view - can pass styles to the container and text, allowing resuse anywhere
   return (
-    <View className={containerStyles}>
+    <>
       {EmojiComponent}
-      <Text className={textStyles}>{emotion}</Text>
-    </View>
+      <Text className={textStyles}> {emotion} </Text>
+    </>
   );
 };
 
