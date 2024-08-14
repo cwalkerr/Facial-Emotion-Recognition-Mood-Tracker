@@ -43,7 +43,7 @@ const getEmoji = ({
     case 'SCARED':
       EmojiComponent = <Fear height={height} width={width} />;
       break;
-    case 'SUPRISED':
+    case 'SURPRISED':
       EmojiComponent = <Surprise height={height} width={width} />;
       break;
     default:

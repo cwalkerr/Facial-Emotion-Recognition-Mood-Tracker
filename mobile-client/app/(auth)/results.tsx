@@ -123,15 +123,31 @@ export default function Results(): React.JSX.Element {
                     <IconButton
                       icon={House}
                       onPress={() => toggleActiveLocation('home')}
+                      btnStyles={
+                        location === 'home'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">Home</Text>
+                    <Text
+                      className={`mt-1 ${location === 'home' ? 'font-semibold' : ''}`}>
+                      Home
+                    </Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={BriefcaseBusiness}
                       onPress={() => toggleActiveLocation('work')}
+                      btnStyles={
+                        location === 'work'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">Work</Text>
+                    <Text
+                      className={`mt-1 ${location === 'work' ? 'font-semibold' : ''}`}>
+                      Work
+                    </Text>
                   </View>
                   <View className="items-center">
                     <IconButton
@@ -139,17 +155,31 @@ export default function Results(): React.JSX.Element {
                       onPress={() => {
                         toggleActiveLocation('school');
                       }}
+                      btnStyles={
+                        location === 'school'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">School</Text>
+                    <Text
+                      className={`mt-1 ${location === 'school' ? 'font-semibold' : ''}`}>
+                      School
+                    </Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={Dumbbell}
-                      onPress={() => {
-                        toggleActiveLocation('gym');
-                      }}
+                      onPress={() => toggleActiveLocation('gym')}
+                      btnStyles={
+                        location === 'gym'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">Gym</Text>
+                    <Text
+                      className={`mt-1 ${location === 'gym' ? 'font-semibold' : ''}`}>
+                      Gym
+                    </Text>
                   </View>
                 </ButtonGroup>
               </View>
@@ -159,29 +189,61 @@ export default function Results(): React.JSX.Element {
                     <IconButton
                       icon={TrainFront}
                       onPress={() => toggleActiveLocation('commute')}
+                      btnStyles={
+                        location === 'commute'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">Commute</Text>
+                    <Text
+                      className={`mt-1 ${location === 'commute' ? 'font-semibold' : ''}`}>
+                      Commute
+                    </Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={Trees}
                       onPress={() => toggleActiveLocation('outdoors')}
+                      btnStyles={
+                        location === 'outdoors'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">Outdoors</Text>
+                    <Text
+                      className={`mt-1 ${location === 'outdoors' ? 'font-semibold' : ''}`}>
+                      Outdoors
+                    </Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={Utensils}
                       onPress={() => toggleActiveLocation('restaurant')}
+                      btnStyles={
+                        location === 'restaurant'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">Restaurant</Text>
+                    <Text
+                      className={`mt-1 ${location === 'restaurant' ? 'font-semibold' : ''}`}>
+                      Restaurant
+                    </Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={ShoppingCart}
                       onPress={() => toggleActiveLocation('shopping')}
+                      btnStyles={
+                        location === 'shopping'
+                          ? 'bg-custom-base border border-2 border-green-500'
+                          : ''
+                      }
                     />
-                    <Text className="mt-1">Shopping</Text>
+                    <Text
+                      className={`mt-1 ${location === 'shopping' ? 'font-semibold' : ''}`}>
+                      Shopping
+                    </Text>
                   </View>
                 </ButtonGroup>
               </View>

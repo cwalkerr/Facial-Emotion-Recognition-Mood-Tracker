@@ -17,7 +17,7 @@ const emotions = [
   'NEUTRAL',
   'SAD',
   'SCARED',
-  'SUPRISED',
+  'SURPRISED',
 ];
 
 interface EmojiCarouselProps {

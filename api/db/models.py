@@ -21,7 +21,7 @@ class Emotion(enum.Enum):
     HAPPY = 3
     NEUTRAL = 4
     SAD = 5
-    SUPRISED = 6
+    SURPRISED = 6
     
     def __str__(self):
         return self.name.capitalize()
@@ -35,6 +35,7 @@ class Location(enum.Enum):
     OUTDOORS = 'Outdoors'
     COMMUTE = 'Commute'
     VACATION = 'Vacation'
+    SHOPPING = 'Shopping'
     
 class User(Base):
     __tablename__ = "users"
