@@ -6,7 +6,7 @@ import Neutral from '@/assets/emojis/Neutral.jsx';
 import Disgust from '@/assets/emojis/Disgust.jsx';
 import Fear from '@/assets/emojis/Fear.jsx';
 import Surprise from '@/assets/emojis/Surprise.jsx';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 
 interface EmojiProps {
   emotion: string;

@@ -26,13 +26,13 @@ const IconButton = ({
   icon,
   iconStroke = 1.5,
   iconColor = 'white',
-  btnStyles = 'rounded-full p-2 w-14 h-14',
+  btnStyles = 'rounded-full p-2 w-14 h-14 bg-custom-primary active:bg-custom-base',
   iconStyles = 'w-7 h-7',
   onPress,
 }: IconButtonProps): React.JSX.Element => {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
-      <Button className={btnStyles}>
+    <TouchableOpacity activeOpacity={0.8}>
+      <Button className={btnStyles} onPress={onPress}>
         <ButtonIcon
           as={icon}
           strokeWidth={iconStroke}

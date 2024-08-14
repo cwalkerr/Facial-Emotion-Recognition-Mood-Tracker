@@ -3,6 +3,7 @@ import { Href, router, Slot, usePathname } from 'expo-router';
 import { GluestackUIProvider } from '@/components/ui/gluestack-imports/gluestack-ui-provider';
 import '../global.css';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   ClerkProvider,
   ClerkLoaded,
@@ -45,15 +46,17 @@ export default function RootLayout() {
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <GluestackUIProvider mode="light">
         <SafeAreaProvider>
-          <ClerkLoading>
-            {/* render loading spinner if Clerk has not loaded yet
+          <GestureHandlerRootView className="flex-1">
+            <ClerkLoading>
+              {/* render loading spinner if Clerk has not loaded yet
                 should still check for !isLoaded in sign in/up processes
                 for component specific states */}
-            <ActivityIndicator />
-          </ClerkLoading>
-          <ClerkLoaded>
-            <AuthConditionalRender />
-          </ClerkLoaded>
+              <ActivityIndicator />
+            </ClerkLoading>
+            <ClerkLoaded>
+              <AuthConditionalRender />
+            </ClerkLoaded>
+          </GestureHandlerRootView>
         </SafeAreaProvider>
       </GluestackUIProvider>
     </ClerkProvider>

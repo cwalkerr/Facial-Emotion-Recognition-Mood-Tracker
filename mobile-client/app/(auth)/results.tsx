@@ -1,5 +1,5 @@
 import { View, Text, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import getEmoji from '@/components/helpers/getEmoji';
 import IconButton from '@/components/ui/IconButton';
@@ -12,8 +12,6 @@ import {
   TrainFront,
   Utensils,
   ShoppingCart,
-  Check,
-  X,
 } from 'lucide-react-native';
 import {
   Button,
@@ -26,6 +24,7 @@ import Animated, {
   useAnimatedKeyboard,
   useAnimatedStyle,
 } from 'react-native-reanimated';
+import EmojiCarousel from '@/components/ui/EmojiCarousel';
 
 export default function Results(): React.JSX.Element {
   const { emotion: initialEmotion } = useLocalSearchParams<{ emotion: string }>();
@@ -34,17 +33,16 @@ export default function Results(): React.JSX.Element {
   const [isAccurate, setIsAccurate] = useState<boolean | null>(null);
   const [location, setLocation] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [showCarousel, setShowCarousel] = useState<boolean>(false);
+
+  // listens for changes in isAccurate; when false, shows the carousel that the user uses to select the correct emotion
+  useEffect(() => {
+    if (isAccurate === false) setShowCarousel(true);
+  }, [isAccurate]);
 
   // toggles the active location button
   const toggleActiveLocation = (button: string) => {
     location === button ? setLocation(null) : setLocation(button);
-  };
-
-  const handleAccuracy = (accuracy: boolean) => {
-    setIsAccurate(accuracy);
-    if (!accuracy) {
-      // show modal to ask for the correct emotion
-    }
   };
 
   const storeResults = () => {
@@ -73,32 +71,48 @@ export default function Results(): React.JSX.Element {
     <Animated.View style={shiftScreenOnKeyboardInput} className="flex-1">
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1 items-center">
-          <View className="items-center absolute top-16">
-            {getEmoji({
-              emotion,
-              height: 72,
-              width: 72,
-              textStyles: 'mt-4 text-2xl capitalize',
-            })}
+          <View className="items-center justify-start mt-16">
+            {showCarousel ? (
+              <EmojiCarousel initialEmotion={emotion} onSnapToItem={setEmotion} />
+            ) : (
+              getEmoji({
+                emotion,
+                height: 72,
+                width: 72,
+                textStyles: 'mt-4 text-2xl capitalize',
+              })
+            )}
           </View>
-          <View className="mt-56 items-center">
-            <Text className="text-xl mb-3">Is this accurate?</Text>
-            <ButtonGroup space="4xl" className="p-2">
-              <IconButton
-                icon={Check}
-                btnStyles="w-12 h-12 rounded-full shadow-sm"
-                iconStroke={2}
-                onPress={() => handleAccuracy(true)}
-              />
-              <IconButton
-                icon={X}
-                btnStyles="w-12 h-12 rounded-full shadow-sm"
-                iconStroke={2}
-                onPress={() => handleAccuracy(false)}
-              />
-            </ButtonGroup>
-          </View>
-          <View className="mt-4">
+          {/* only display before choice is made, will be null before being true/false */}
+          {isAccurate === null && (
+            <View className="mt-7 items-center">
+              <Text className="text-xl mb-3 italic">Is this accurate?</Text>
+              <ButtonGroup space="4xl" className="p-2">
+                <Button
+                  size="lg"
+                  action="positive"
+                  className="rounded-2xl opacity-75 shadow-sm active:bg-green-700"
+                  onPress={() => setIsAccurate(true)}>
+                  <ButtonText>Yes</ButtonText>
+                </Button>
+                <Button
+                  size="lg"
+                  action="negative"
+                  className="rounded-2xl opacity-75 shadow-sm active:bg-red-600"
+                  onPress={() => setIsAccurate(false)}>
+                  <ButtonText>No</ButtonText>
+                </Button>
+              </ButtonGroup>
+            </View>
+          )}
+          {isAccurate === false && (
+            <View className="mt-6 items-center">
+              <Text className="mb-3 italic text-grey-500">
+                Swipe above to select the correct emotion.
+              </Text>
+            </View>
+          )}
+          <View className="mt-6">
             <Text className="text-xl p-2 ml-3">Add location?</Text>
             {/* this can likely be done programatically mapping icons names to location names and
              iterating over a loop to display rather than adding each on its own*/}
@@ -133,7 +147,6 @@ export default function Results(): React.JSX.Element {
                       icon={Dumbbell}
                       onPress={() => {
                         toggleActiveLocation('gym');
-                        console.log('gym');
                       }}
                     />
                     <Text className="mt-1">Gym</Text>
@@ -185,11 +198,16 @@ export default function Results(): React.JSX.Element {
               </Textarea>
             </View>
           </View>
-          <View className="mt-5 absolute bottom-10">
-            <Button size="xl" className="rounded-3xl" onPress={() => storeResults}>
-              <ButtonText>Continue</ButtonText>
-            </Button>
-          </View>
+          {isAccurate !== null && (
+            <View className="mt-6 justify-end">
+              <Button
+                size="xl"
+                className="rounded-2xl bg-custom-primary shadow-sm active:bg-custom-base"
+                onPress={() => storeResults()}>
+                <ButtonText>Continue</ButtonText>
+              </Button>
+            </View>
+          )}
         </View>
       </TouchableWithoutFeedback>
     </Animated.View>

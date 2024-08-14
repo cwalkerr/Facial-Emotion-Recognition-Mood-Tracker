@@ -3,6 +3,11 @@ import { vars } from 'nativewind';
 
 export const config = {
   light: vars({
+    // Custom colors
+    '--color-primary': '#6d4e8a',
+    '--color-base': '#3C1361',
+    '--color-active': '#692f70',
+
     '--color-primary-0': '179 179 179',
     '--color-primary-50': '153 153 153',
     '--color-primary-100': '128 128 128',
