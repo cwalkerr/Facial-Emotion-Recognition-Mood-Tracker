@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from endpoints.predict import router as predict_router
 from endpoints.upload_id import router as id_router
+from endpoints.readings import router as reading_router
 
 app = FastAPI()
 
@@ -21,6 +22,7 @@ async def root():
 # Routes
 app.include_router(predict_router, prefix="/api")
 app.include_router(id_router, prefix="/api")
+app.include_router(reading_router, prefix='/api')
 
 if __name__ == "__main__":
     import uvicorn

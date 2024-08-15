@@ -3,7 +3,7 @@ import requests
 import os
 import numpy as np
 from dotenv import load_dotenv
-from db.models import Emotion
+from services.emotion_enum import Emotions
 
 load_dotenv()
  
@@ -33,7 +33,7 @@ def forward_to_serving(image_data: np.ndarray) -> dict:
         most_likely_emotion_index = int(np.argmax(prediction["predictions"][0])) # get the index of the highest confidence - maps to Emotion enum
         confidence = prediction["predictions"][0][most_likely_emotion_index]        
                 
-        return {"prediction": Emotion(most_likely_emotion_index).name, "confidence": confidence}
+        return {"prediction": Emotions(most_likely_emotion_index).name, "confidence": confidence}
 
     except Exception as error:
         print("Error in Forward to Serving: ", error)

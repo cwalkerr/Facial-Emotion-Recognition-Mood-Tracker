@@ -1,8 +1,7 @@
 import datetime
-import enum
-from sqlalchemy import TIME, TIMESTAMP, ForeignKey, String, Integer, Enum
+from sqlalchemy import TIME, TIMESTAMP, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase
-from typing import List, Optional
+from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 
 
@@ -14,33 +13,10 @@ class Base(DeclarativeBase):
         datetime.time: TIME(timezone=True),
     }
 
-class Emotion(enum.Enum):
-    ANGRY = 0
-    DISGUSTED = 1
-    SCARED = 2
-    HAPPY = 3
-    NEUTRAL = 4
-    SAD = 5
-    SURPRISED = 6
-    
-    def __str__(self):
-        return self.name.capitalize()
-
-class Location(enum.Enum):
-    HOME = 'Home'
-    WORK = 'Work'
-    SCHOOL = 'School'
-    GYM = 'Gym'
-    RESTAURANT = 'Restaurant'
-    OUTDOORS = 'Outdoors'
-    COMMUTE = 'Commute'
-    VACATION = 'Vacation'
-    SHOPPING = 'Shopping'
-    
 class User(Base):
     __tablename__ = "users"
     
-    id: Mapped[int] = mapped_column(name='user_id', primary_key=True)
+    user_id: Mapped[int] = mapped_column(primary_key=True)
     clerk_id: Mapped[str] = mapped_column(String(255))
     notification_start_time: Mapped[Optional[datetime.time]] 
     notification_end_time: Mapped[Optional[datetime.time]]
@@ -48,17 +24,30 @@ class User(Base):
 class Reading(Base):
     __tablename__ = "readings"
     
-    id: Mapped[int] = mapped_column(name='reading_id', primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    emotion: Mapped[Emotion]
+    reading_id: Mapped[int] = mapped_column(primary_key=True)
     datetime: Mapped[datetime.datetime]
-    location: Mapped[Optional[Location]]
     note: Mapped[Optional[str]]
+    location_id: Mapped[Optional[int]] = mapped_column(ForeignKey('locations.location_id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'))
+    emotion_id: Mapped[int] = mapped_column(ForeignKey('emotions.emotion_id'))
+    
+
+class Emotion(Base):
+    __tablename__ = "emotions"
+    
+    emotion_id: Mapped[int] = mapped_column(primary_key=True)
+    label: Mapped[str]
+
+class Location(Base):
+    __tablename__ = "locations"
+    
+    location_id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
 
 class GlobalAccuracyCount(Base):
     __tablename__ = "global_accuracy_count"
     
-    id: Mapped[int] = mapped_column(name='count_id', primary_key=True)
+    count_id: Mapped[int] = mapped_column(primary_key=True)
     accurate_readings: Mapped[int]    
     failed_readings: Mapped[int]
 
