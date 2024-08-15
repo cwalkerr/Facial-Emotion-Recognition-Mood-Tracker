@@ -7,7 +7,6 @@ from sqlalchemy import select
 from services.verifyToken import verify_token
 from db.connection import Session
 from db.models import GlobalAccuracyCount, Reading, Emotion, Location
-from services.getUserIdByClerkId import get_user_id_by_clerk_id
 
 
 router = APIRouter()
@@ -31,8 +30,6 @@ async def upload_reading(
         verification = verify_token(token.credentials)
         if (verification["valid"] == False):
             return JSONResponse(content={"message": verification["message"]}, status_code=401)
-        # get user id from the clerk id
-        user_id = await get_user_id_by_clerk_id(request.clerk_id)
         # save reading to db
         async with Session() as session:
             # get emotion id
@@ -53,11 +50,11 @@ async def upload_reading(
             
             # add the reading
             new_reading = Reading(
-                user_id=user_id, 
                 datetime=request.timestamp,
                 note=request.note,
                 emotion_id=emotion_id,
-                location_id=location_id
+                location_id=location_id,
+                clerk_id=request.clerk_id
             )
             session.add(new_reading)
 

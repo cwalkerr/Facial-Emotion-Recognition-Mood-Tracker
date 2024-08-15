@@ -28,21 +28,21 @@ class Reading(Base):
     datetime: Mapped[datetime.datetime]
     note: Mapped[Optional[str]]
     location_id: Mapped[Optional[int]] = mapped_column(ForeignKey('locations.location_id'))
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'))
     emotion_id: Mapped[int] = mapped_column(ForeignKey('emotions.emotion_id'))
+    clerk_id: Mapped[str] = mapped_column(String(255), ForeignKey('users.clerk_id'))
     
 
 class Emotion(Base):
     __tablename__ = "emotions"
     
     emotion_id: Mapped[int] = mapped_column(primary_key=True)
-    label: Mapped[str]
+    label: Mapped[str] = mapped_column(String(50))
 
 class Location(Base):
     __tablename__ = "locations"
     
     location_id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(String(100))
 
 class GlobalAccuracyCount(Base):
     __tablename__ = "global_accuracy_count"
