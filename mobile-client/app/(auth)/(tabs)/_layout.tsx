@@ -3,7 +3,7 @@ import { Href, Tabs, router } from 'expo-router';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import CameraFAB from '@/components/CameraFab';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
-import getUserData from '@/services/api/fetchUserData';
+import fetchUserData from '@/services/api/fetchUserData';
 import { useAuth } from '@clerk/clerk-expo';
 import { ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -38,7 +38,7 @@ export default function TabLayout() {
       }
       // if navigated from results call api to refresh data
       if (isFromResults) {
-        const data = await getUserData(userId, token);
+        const data = await fetchUserData(userId, token);
         setUserData(data);
         // save new data in persistant storage
         await AsyncStorage.setItem('userData', JSON.stringify(data));
@@ -57,7 +57,7 @@ export default function TabLayout() {
           setUserData(JSON.parse(storedData));
         } else {
           // if its a new week, or no data in storage, get fresh data (default view will show this weeks data)
-          const data = await getUserData(userId, token);
+          const data = await fetchUserData(userId, token);
           setUserData(data);
           await AsyncStorage.setItem('userData', JSON.stringify(data));
           await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());

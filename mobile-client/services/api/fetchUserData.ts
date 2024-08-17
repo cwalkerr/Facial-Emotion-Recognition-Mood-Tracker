@@ -18,7 +18,7 @@ export interface UserDataFilters {
   location?: string;
 }
 
-const getUserData = async (
+const fetchUserData = async (
   clerk_id: string,
   token: string,
   filters?: UserDataFilters
@@ -51,4 +51,4 @@ const getUserData = async (
   return result;
 };
 
-export default getUserData;
+export default fetchUserData;
