@@ -1,9 +1,10 @@
+from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from services.verifyToken import verify_token
 from db.connection import Session
 from db.models import GlobalAccuracyCount, Reading, Emotion, Location
@@ -12,7 +13,7 @@ from db.models import GlobalAccuracyCount, Reading, Emotion, Location
 router = APIRouter()
 security = HTTPBearer()
 
-class ReadingRequest(BaseModel):
+class ReadingPostRequest(BaseModel):
     emotion: str
     is_accurate: bool
     location: Optional[str] = None
@@ -22,7 +23,7 @@ class ReadingRequest(BaseModel):
 
 @router.post("/reading")
 async def upload_reading( 
-    request: ReadingRequest,
+    request: ReadingPostRequest,
     token: HTTPAuthorizationCredentials = Depends(security)
 ) -> JSONResponse:
     try :
@@ -42,7 +43,7 @@ async def upload_reading(
             # get location id if it is included
             if (request.location):
                 location_result = await session.execute(
-                    select(Location.location_id).where(Location.name == request.location)
+                    select(Location.location_id).where(Location.name == request.location.capitalize())
                 )
                 location_id = location_result.scalar_one_or_none()
                 if location_id is None:
@@ -73,3 +74,68 @@ async def upload_reading(
         return JSONResponse(content={"message": error.detail}, status_code=error.status_code)
     except Exception as error:
         return JSONResponse(content={"message": str(error)}, status_code=400)
+
+# Gets the users readings, can add optional filters for timeframe, emotion and location
+# orders by datetime by default, makes it easier to display the most recent on client   
+@router.get('/reading')
+async def get_user_readings(
+    clerk_id: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    emotion: Optional[str] = None,
+    location: Optional[str] = None,
+    token: HTTPAuthorizationCredentials = Depends(security)
+) -> JSONResponse:
+    try:
+        verification = verify_token(token.credentials)
+        if (verification["valid"] == False):
+            return JSONResponse(content={"message": verification["message"]}, status_code=401)
+        
+        async with Session() as session:
+            query = (
+                select( # manually adding fields required, 
+                       # clerk_id, location_id, emotion_id all not needed
+                    Reading.reading_id,
+                    Emotion.label, 
+                    Location.name,
+                    Reading.datetime,
+                    Reading.note
+                )
+                .join(Emotion)
+                .outerjoin(Location) # ensures readings are present even if no location was added
+                .where(Reading.clerk_id == clerk_id)
+                .order_by(desc(Reading.datetime)) # most recent first, todays 3 readings shown in app, so simplifies this
+            )
+            # provide filter options
+            if start_date and end_date:
+                query = query.where(
+                    Reading.datetime.between(date.fromisoformat(start_date), date.fromisoformat(end_date)))
+            elif start_date:
+                query = query.where(Reading.datetime >= date.fromisoformat(start_date))
+            elif end_date:
+                query = query.where(Reading.datetime <= date.fromisoformat(end_date))
+
+            if emotion:
+                query = query.where(Emotion.label == emotion.capitalize())
+            if location:
+                query = query.where(Location.name == location.capitalize())
+                
+            result = await session.execute(query)
+           # use list comprehension to format the data, label/name -> emotion/location
+           # also format the date to json readable
+           # if no location or note present, key still included just null value, keeps the json consistent
+            formatted_readings = [
+                {
+                    "id": row.reading_id,
+                    "emotion": row.label,
+                    "location": row.name,
+                    "datetime": row.datetime.isoformat(),
+                    "note": row.note
+                }
+                for row in result
+            ]
+            return JSONResponse(content={"readings": formatted_readings}, status_code=200)
+    except Exception as error:
+        return JSONResponse(content={"message": str(error)}, status_code=400)
+        
+    
