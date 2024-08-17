@@ -36,18 +36,19 @@ export default function TabLayout() {
         handleError('Token is null');
         return;
       }
-
+      // if navigated from results call api to refresh data
       if (isFromResults) {
-        console.log('isFromResults block called');
         const data = await getUserData(userId, token);
         setUserData(data);
+        // save new data in persistant storage
         await AsyncStorage.setItem('userData', JSON.stringify(data));
         await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
       } else {
-        console.log('first else block called');
+        // on component mount (app reload) check if data exists in persistant storage
         const storedData = await AsyncStorage.getItem('userData');
         const lastFetchedDate = await AsyncStorage.getItem('lastFetchedDate');
         const currentDate = new Date();
+        // if data stored is within the current week, retrieve from persistant storage
         if (
           storedData &&
           lastFetchedDate &&
@@ -55,7 +56,7 @@ export default function TabLayout() {
         ) {
           setUserData(JSON.parse(storedData));
         } else {
-          console.log('second else block called');
+          // if its a new week, or no data in storage, get fresh data (default view will show this weeks data)
           const data = await getUserData(userId, token);
           setUserData(data);
           await AsyncStorage.setItem('userData', JSON.stringify(data));
