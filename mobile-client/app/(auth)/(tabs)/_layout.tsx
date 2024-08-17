@@ -6,6 +6,8 @@ import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 import getUserData from '@/services/api/getUserData';
 import { useAuth } from '@clerk/clerk-expo';
 import { ActivityIndicator, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isSameWeek } from 'date-fns';
 
 export default function TabLayout() {
   const { getToken, userId, isLoaded } = useAuth();
@@ -24,20 +26,41 @@ export default function TabLayout() {
     const getData = async () => {
       if (!isLoaded) return <ActivityIndicator />;
 
+      const token = await getToken();
+
+      if (!userId) {
+        handleError('ClerkID is null');
+        return;
+      }
+      if (token === null) {
+        handleError('Token is null');
+        return;
+      }
+
       if (isFromResults) {
-        const token = await getToken();
-
-        if (!userId) {
-          handleError('ClerkID is null');
-          return;
-        }
-        if (token === null) {
-          handleError('Token is null');
-          return;
-        }
-
+        console.log('isFromResults block called');
         const data = await getUserData(userId, token);
         setUserData(data);
+        await AsyncStorage.setItem('userData', JSON.stringify(data));
+        await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
+      } else {
+        console.log('first else block called');
+        const storedData = await AsyncStorage.getItem('userData');
+        const lastFetchedDate = await AsyncStorage.getItem('lastFetchedDate');
+        const currentDate = new Date();
+        if (
+          storedData &&
+          lastFetchedDate &&
+          isSameWeek(new Date(lastFetchedDate), currentDate)
+        ) {
+          setUserData(JSON.parse(storedData));
+        } else {
+          console.log('second else block called');
+          const data = await getUserData(userId, token);
+          setUserData(data);
+          await AsyncStorage.setItem('userData', JSON.stringify(data));
+          await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
+        }
       }
     };
     getData();
