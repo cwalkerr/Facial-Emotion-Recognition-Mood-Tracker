@@ -7,7 +7,7 @@ interface EmotionReading {
   note?: string;
 }
 // tells ts that these reading objects are an array of readings
-interface UserDataResponse {
+export interface UserDataResponse {
   readings: EmotionReading[];
 }
 

@@ -27,6 +27,7 @@ import Animated, {
 import EmojiCarousel from '@/components/ui/EmojiCarousel';
 import { useAuth } from '@clerk/clerk-expo';
 import uploadResult, { ReadingData } from '@/services/api/uploadResult';
+import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 
 export default function Results(): React.JSX.Element {
   const { emotion: initialEmotion } = useLocalSearchParams<{ emotion: string }>();
@@ -37,6 +38,7 @@ export default function Results(): React.JSX.Element {
   const [note, setNote] = useState<string | null>(null);
   const [showCarousel, setShowCarousel] = useState<boolean>(false);
   const { getToken, userId } = useAuth();
+  const { setIsFromResults } = useRefreshDataContext();
 
   // listens for changes in isAccurate; when false, shows the carousel that the user uses to select the correct emotion
   useEffect(() => {
@@ -104,8 +106,10 @@ export default function Results(): React.JSX.Element {
     // send the reading data to the server
     try {
       await uploadResult(readingData, token);
-      // if the upload is successful, navigate to the home screen
-      router.replace('/' as Href);
+      setIsFromResults(true); // pass state to tell tabs layout to refresh user data as coming from results
+      // using replace here scraps stack to unmount the camera view, preventing memory leak,
+      // keep camera mounted before here, allows users to go back to camera from results with quicker load times
+      router.replace(`/` as Href);
     } catch (error) {
       if (error instanceof Error) {
         handleError(error.message);
@@ -173,7 +177,7 @@ export default function Results(): React.JSX.Element {
                       onPress={() => toggleActiveLocation('Home')}
                       btnStyles={
                         location === 'Home'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
@@ -188,7 +192,7 @@ export default function Results(): React.JSX.Element {
                       onPress={() => toggleActiveLocation('Work')}
                       btnStyles={
                         location === 'Work'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
@@ -205,7 +209,7 @@ export default function Results(): React.JSX.Element {
                       }}
                       btnStyles={
                         location === 'School'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
@@ -220,7 +224,7 @@ export default function Results(): React.JSX.Element {
                       onPress={() => toggleActiveLocation('Gym')}
                       btnStyles={
                         location === 'Gym'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
@@ -239,7 +243,7 @@ export default function Results(): React.JSX.Element {
                       onPress={() => toggleActiveLocation('Commute')}
                       btnStyles={
                         location === 'Commute'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
@@ -254,7 +258,7 @@ export default function Results(): React.JSX.Element {
                       onPress={() => toggleActiveLocation('Outdoors')}
                       btnStyles={
                         location === 'Outdoors'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
@@ -269,7 +273,7 @@ export default function Results(): React.JSX.Element {
                       onPress={() => toggleActiveLocation('Restaurant')}
                       btnStyles={
                         location === 'Restaurant'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
@@ -284,7 +288,7 @@ export default function Results(): React.JSX.Element {
                       onPress={() => toggleActiveLocation('Shopping')}
                       btnStyles={
                         location === 'Shopping'
-                          ? 'bg-custom-base border border-2 border-green-500'
+                          ? 'bg-custom-base border border-3 border-green-500'
                           : ''
                       }
                     />
