@@ -3,7 +3,7 @@ import { Href, Tabs, router } from 'expo-router';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import CameraFAB from '@/components/CameraFab';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
-import getUserData from '@/services/api/getUserData';
+import getUserData from '@/services/api/fetchUserData';
 import { useAuth } from '@clerk/clerk-expo';
 import { ActivityIndicator, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';

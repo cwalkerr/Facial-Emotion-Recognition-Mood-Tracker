@@ -10,13 +10,27 @@ interface EmotionReading {
 export interface UserDataResponse {
   readings: EmotionReading[];
 }
+// list of optional filters
+export interface UserDataFilters {
+  start_date?: string;
+  end_date?: string;
+  emotion?: string;
+  location?: string;
+}
 
 const getUserData = async (
   clerk_id: string,
-  token: string
+  token: string,
+  filters?: UserDataFilters
 ): Promise<UserDataResponse> => {
+  // query params object, always include clerk id, include any filters specified
+  const queryParams = new URLSearchParams({
+    clerk_id,
+    ...filters,
+  });
+
   const response = await fetch(
-    `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading?clerk_id=${clerk_id}`,
+    `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading?${queryParams.toString()}`,
     {
       method: 'GET',
       headers: {

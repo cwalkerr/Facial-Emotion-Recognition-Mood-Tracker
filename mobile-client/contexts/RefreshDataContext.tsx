@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
-import { UserDataResponse } from '@/services/api/getUserData';
+import { UserDataResponse } from '@/services/api/fetchUserData';
 
 // defines the types of the context/states values - UserDataResponse = (array of emotion readings)
 interface RefreshDataContextProps {
