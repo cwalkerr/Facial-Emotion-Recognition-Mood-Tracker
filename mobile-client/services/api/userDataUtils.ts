@@ -16,8 +16,8 @@ export const fetchWeeklyData = async (
   token: string
 ): Promise<UserDataResponse> => {
   const filters: UserDataFilters = {
-    start_date: format(startOfWeek(now), 'dd-MM-yyyy'),
-    end_date: format(endOfWeek(now), 'dd-MM-yyyy'),
+    start_date: format(startOfWeek(now), 'yyyy-MM-dd'),
+    end_date: format(endOfWeek(now), 'yyyy-MM-dd'),
   };
   return await fetchUserData(clerk_id, token, filters);
 };
@@ -27,8 +27,8 @@ export const fetchMonthlyData = async (
   token: string
 ): Promise<UserDataResponse> => {
   const filters: UserDataFilters = {
-    start_date: format(startOfMonth(now), 'dd-MM-yyyy'),
-    end_date: format(endOfMonth(now), 'dd-MM-yyyy'),
+    start_date: format(startOfMonth(now), 'yyyy-MM-dd'),
+    end_date: format(endOfMonth(now), 'yyyy-MM-dd'),
   };
   return await fetchUserData(clerk_id, token, filters);
 };
@@ -38,8 +38,8 @@ export const fetchYearlyData = async (
   token: string
 ): Promise<UserDataResponse> => {
   const filters: UserDataFilters = {
-    start_date: format(startOfYear(now), 'dd-MM-yyyy'),
-    end_date: format(endOfYear(now), 'dd-MM-yyyy'),
+    start_date: format(startOfYear(now), 'yyyy-MM-dd'),
+    end_date: format(endOfYear(now), 'yyyy-MM-dd'),
   };
   return await fetchUserData(clerk_id, token, filters);
 };

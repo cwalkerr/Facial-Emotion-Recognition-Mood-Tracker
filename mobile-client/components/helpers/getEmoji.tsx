@@ -50,10 +50,11 @@ const getEmoji = ({
       throw new Error('Invalid emotion');
   }
   // adds the emoji and text to a view - can pass styles to the container and text, allowing resuse anywhere
+  // only add the text component if styles for it are provided
   return (
     <>
       {EmojiComponent}
-      <Text className={textStyles}> {emotion} </Text>
+      {textStyles && <Text className={textStyles}> {emotion} </Text>}
     </>
   );
 };

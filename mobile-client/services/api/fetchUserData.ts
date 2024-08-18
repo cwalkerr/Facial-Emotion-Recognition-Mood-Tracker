@@ -1,5 +1,5 @@
 // defines the types of each reading object
-interface EmotionReading {
+export interface EmotionReading {
   id: number;
   emotion: string;
   location?: string;
