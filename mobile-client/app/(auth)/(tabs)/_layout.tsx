@@ -3,11 +3,12 @@ import { Href, Tabs, router } from 'expo-router';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import CameraFAB from '@/components/CameraFab';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
-import fetchUserData from '@/services/api/fetchUserData';
+import { fetchWeeklyData } from '@/services/api/userDataUtils';
 import { useAuth } from '@clerk/clerk-expo';
-import { ActivityIndicator, Alert } from 'react-native';
+import { ActivityIndicator, Alert, View, Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isSameWeek } from 'date-fns';
+import { formatDate } from '@/services/formatDateTime';
 
 export default function TabLayout() {
   const { getToken, userId, isLoaded } = useAuth();
@@ -38,7 +39,7 @@ export default function TabLayout() {
       }
       // if navigated from results call api to refresh data
       if (isFromResults) {
-        const data = await fetchUserData(userId, token);
+        const data = await fetchWeeklyData(userId, token);
         setUserData(data);
         // save new data in persistant storage
         await AsyncStorage.setItem('userData', JSON.stringify(data));
@@ -57,7 +58,7 @@ export default function TabLayout() {
           setUserData(JSON.parse(storedData));
         } else {
           // if its a new week, or no data in storage, get fresh data (default view will show this weeks data)
-          const data = await fetchUserData(userId, token);
+          const data = await fetchWeeklyData(userId, token);
           setUserData(data);
           await AsyncStorage.setItem('userData', JSON.stringify(data));
           await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
@@ -69,32 +70,42 @@ export default function TabLayout() {
 
   return (
     <>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarShowLabel: false,
-          tabBarStyle: {
-            backgroundColor: 'transparent',
-            borderTopWidth: 0,
-          },
-        }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Home',
-            tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
-          }}
-        />
-        <Tabs.Screen
-          name="stats"
-          options={{
-            title: 'Stats',
-            tabBarIcon: ({ color }) => (
-              <TabBarIcon name="stats-chart" color={color} />
+      <View className="flex-1">
+        <Tabs
+          screenOptions={{
+            tabBarShowLabel: false,
+            tabBarStyle: {
+              backgroundColor: 'transparent',
+              borderTopWidth: 0,
+            },
+            headerStyle: {
+              backgroundColor: 'transparent',
+            },
+            headerTitle: () => (
+              <View className="items-center justify-center mt-5">
+                {/* todays date formatted i.e. "18th August 2024" */}
+                <Text className="text-2xl">{formatDate(new Date())}</Text>
+              </View>
             ),
-          }}
-        />
-      </Tabs>
+          }}>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Home',
+              tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="stats"
+            options={{
+              title: 'Stats',
+              tabBarIcon: ({ color }) => (
+                <TabBarIcon name="stats-chart" color={color} />
+              ),
+            }}
+          />
+        </Tabs>
+      </View>
       {/* Opens Camera Preview - Positioned centre of tabs raised*/}
       <CameraFAB
         onPress={() => {
