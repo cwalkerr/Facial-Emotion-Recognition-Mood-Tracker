@@ -40,7 +40,8 @@ async def upload_reading(
             if emotion_id is None:
                 return JSONResponse(content={"message": "Invalid emotion"}, status_code=400)
             
-            # get location id if it is included
+            # get location id if request.location included
+            location_id = None # init to none to prevent error accessing in reading object, could conditionally add it to reading object but this is less verbose
             if (request.location):
                 location_result = await session.execute(
                     select(Location.location_id).where(Location.name == request.location.capitalize())
@@ -52,7 +53,7 @@ async def upload_reading(
             # add the reading
             new_reading = Reading(
                 datetime=request.timestamp,
-                note=request.note,
+                note=request.note, # will be null if not included
                 emotion_id=emotion_id,
                 location_id=location_id,
                 clerk_id=request.clerk_id
