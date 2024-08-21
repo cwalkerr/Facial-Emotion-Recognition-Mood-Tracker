@@ -2,7 +2,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Href, Link, router } from 'expo-router';
 import React from 'react';
 import { Pressable, Text, ActivityIndicator, Alert } from 'react-native';
-import CameraFAB from '@/components/CameraFab';
+import CameraFAB from '@/components/ui/CameraFab';
 import { View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';

@@ -4,14 +4,34 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
-from sqlalchemy import desc, select
+from sqlalchemy import desc, select, func
 from services.verifyToken import verify_token
 from db.connection import Session
 from db.models import GlobalAccuracyCount, Reading, Emotion, Location
-
+from services.emotion_enum import Emotions
 
 router = APIRouter()
 security = HTTPBearer()
+
+# helper function to apply filters to the query, used in two seperate queries so extracted to function
+def apply_filters(query, clerk_id, start_date=None, end_date=None, emotion=None, location=None):
+    query = query.where(Reading.clerk_id == clerk_id)
+    
+    if start_date and end_date:
+        query = query.where(
+            Reading.datetime.between(date.fromisoformat(start_date), date.fromisoformat(end_date))
+        )
+    elif start_date:
+        query = query.where(Reading.datetime >= date.fromisoformat(start_date))
+    elif end_date:
+        query = query.where(Reading.datetime <= date.fromisoformat(end_date))
+
+    if emotion:
+        query = query.where(Emotion.label == emotion.capitalize())
+    if location:
+        query = query.where(Location.name == location.capitalize())
+    
+    return query
 
 class ReadingPostRequest(BaseModel):
     emotion: str
@@ -92,7 +112,7 @@ async def get_user_readings(
         if (verification["valid"] == False):
             return JSONResponse(content={"message": verification["message"]}, status_code=401)
         
-        async with Session() as session:
+        async with Session() as session:    
             query = (
                 select( # manually adding fields required, 
                        # clerk_id, location_id, emotion_id all not needed
@@ -100,27 +120,14 @@ async def get_user_readings(
                     Emotion.label, 
                     Location.name,
                     Reading.datetime,
-                    Reading.note
+                    Reading.note,
                 )
                 .join(Emotion)
                 .outerjoin(Location) # ensures readings are present even if no location was added
                 .where(Reading.clerk_id == clerk_id)
                 .order_by(desc(Reading.datetime)) # most recent first, todays 3 readings shown in app, so simplifies this
             )
-            # provide filter options
-            if start_date and end_date:
-                query = query.where(
-                    Reading.datetime.between(date.fromisoformat(start_date), date.fromisoformat(end_date)))
-            elif start_date:
-                query = query.where(Reading.datetime >= date.fromisoformat(start_date))
-            elif end_date:
-                query = query.where(Reading.datetime <= date.fromisoformat(end_date))
-
-            if emotion:
-                query = query.where(Emotion.label == emotion.capitalize())
-            if location:
-                query = query.where(Location.name == location.capitalize())
-                
+            query = apply_filters(query, clerk_id, start_date, end_date, emotion, location)
             result = await session.execute(query)
            # use list comprehension to format the data, label/name -> emotion/location
            # also format the date to json readable
@@ -131,11 +138,37 @@ async def get_user_readings(
                     "emotion": row.label,
                     "location": row.name,
                     "datetime": row.datetime.isoformat(),
-                    "note": row.note
+                    "note": row.note,
                 }
                 for row in result
             ]
-            return JSONResponse(content={"readings": formatted_readings}, status_code=200)
+            # get the counts of each emotion for the selected readings
+            count_query = (
+                select(
+                    Emotion.label,
+                    func.count(Reading.reading_id).label("count")
+                )
+                .join(Emotion)
+                .outerjoin(Location)
+                .where(Reading.clerk_id == clerk_id)
+                .group_by(Emotion.label)
+            )
+            count_query = apply_filters(count_query, clerk_id, start_date, end_date, emotion, location)
+            count_result = await session.execute(count_query)
+            
+            # format the counts default 0 value to include all keys in response
+            counts = {
+                str(emotion): 0 for emotion in Emotions
+            }
+            for row in count_result:
+                counts[row.label] = row.count
+            # combine the formatted readings and counts into the response
+            response = {
+                "readings": formatted_readings,
+                "counts": counts
+            }
+            
+            return JSONResponse(content=response, status_code=200)
     except Exception as error:
         return JSONResponse(content={"message": str(error)}, status_code=400)
         

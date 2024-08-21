@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Href, Tabs, router } from 'expo-router';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import CameraFAB from '@/components/CameraFab';
+import CameraFAB from '@/components/ui/CameraFab';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 import { fetchWeeklyData } from '@/services/api/userDataUtils';
 import { useAuth } from '@clerk/clerk-expo';
@@ -16,7 +16,7 @@ export default function TabLayout() {
 
   const handleError = (
     logMessage: string,
-    alertMessage: string = 'Failed to upload reading, please try again'
+    alertMessage: string = 'Something went wrong, please reload the app'
   ): void => {
     console.error(logMessage);
     Alert.alert('Error', alertMessage);
@@ -38,6 +38,8 @@ export default function TabLayout() {
         return;
       }
       // if navigated from results call api to refresh data
+      // fetching weekly data in this case is not necessary, i suppose the recently added result could be passsed here in query params
+      // then added to the existing data, but this is fine for now
       if (isFromResults) {
         const data = await fetchWeeklyData(userId, token);
         setUserData(data);
@@ -57,7 +59,7 @@ export default function TabLayout() {
         ) {
           setUserData(JSON.parse(storedData));
         } else {
-          // if its a new week, or no data in storage, get fresh data (default view will show this weeks data)
+          // if its a new week, or no data in storage, get fresh data, again, probably redundant as there will be no data, but easy way to reset the persistant storage to null
           const data = await fetchWeeklyData(userId, token);
           setUserData(data);
           await AsyncStorage.setItem('userData', JSON.stringify(data));

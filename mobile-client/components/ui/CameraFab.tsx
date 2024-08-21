@@ -1,5 +1,5 @@
 import React from 'react';
-import { Fab } from './ui/gluestack-imports/fab';
+import { Fab } from '@/components/ui/gluestack-imports/fab';
 import { Camera } from 'lucide-react-native';
 
 // add props to fab

@@ -6,9 +6,13 @@ export interface EmotionReading {
   datetime: string;
   note?: string;
 }
+export interface EmotionCounts {
+  [emotion: string]: number;
+}
 // tells ts that these reading objects are an array of readings
 export interface UserDataResponse {
   readings: EmotionReading[];
+  counts: EmotionCounts;
 }
 // list of optional filters
 export interface UserDataFilters {
