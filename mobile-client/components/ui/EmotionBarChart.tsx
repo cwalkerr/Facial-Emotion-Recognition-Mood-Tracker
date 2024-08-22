@@ -7,6 +7,9 @@ import { Colors } from '@/constants/Colors';
 import { Sizes } from '@/constants/Sizes';
 import { Search } from 'lucide-react-native';
 import { UserDataResponse } from '@/services/api/fetchUserData';
+import ChartFilterActionSheet from './ChartFilterActionSheet';
+import formatFilterDescription from '@/services/formatFilterDescription';
+import { Location } from '@/constants/Locations';
 
 interface EmotionBarChartProps {
   counts: UserDataResponse['counts'];
@@ -17,9 +20,6 @@ const Bars = ({ counts }: EmotionBarChartProps) => {
   // map over keys of counts to access the values and create the bars labels, colours and values
   const bars = emotions.map(emotion => {
     const frontColor = Colors[emotion.toUpperCase()];
-    console.log(
-      `Emotion: ${emotion}, Value: ${counts[emotion]}, Color: ${frontColor}`
-    );
     return {
       value: counts[emotion],
       labelComponent: () =>
@@ -31,20 +31,32 @@ const Bars = ({ counts }: EmotionBarChartProps) => {
       frontColor: frontColor,
     };
   });
-  console.log(bars);
   return bars;
 };
 
 export default function EmotionBarChart({
   counts,
 }: EmotionBarChartProps): React.JSX.Element {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showActionsheet, setShowActionsheet] = useState<boolean>(false);
+  const [filteredData, setFilteredData] = useState<UserDataResponse | null>(null);
+  const [filterDescription, setFilterDescription] = useState<string>('This Week');
 
   useEffect(() => {
     if (counts) {
       setIsLoading(false);
     }
   }, [counts]);
+
+  const handleFetchFilteredData = (
+    data: UserDataResponse,
+    filters: { timeframe: string; location?: Location }
+  ) => {
+    setFilteredData(data);
+    setFilterDescription(
+      formatFilterDescription(filters.timeframe, filters.location)
+    );
+  };
 
   // check the total count, if 0 display a message to take a reading
   let totalCount = 0;
@@ -54,35 +66,46 @@ export default function EmotionBarChart({
     }
   }
   return (
-    <Card
-      key={'barchart'}
-      variant="elevated"
-      className="shadow-sm rounded-3xl mt-4 pb-8 relative flex items-center justify-center">
-      <Text className="text-center pt-1">This Week</Text>
-      {isLoading && <ActivityIndicator />}
-      {!isLoading && totalCount === 0 && (
-        <Text className="text-center italic text-gray-400 absolute pb-6">
-          No readings yet, take a photo to start tracking!
-        </Text>
-      )}
-      <Pressable className="absolute top-5 right-5">
-        <Search color={'grey'} />
-      </Pressable>
-      {!isLoading && (
-        <BarChart
-          data={Bars({ counts })}
-          isAnimated
-          barBorderRadius={6}
-          barWidth={26}
-          height={170}
-          yAxisLabelWidth={14}
-          spacing={15}
-          labelsDistanceFromXaxis={1}
-          hideAxesAndRules
-          disableScroll
-          showValuesAsTopLabel
-        />
-      )}
-    </Card>
+    <>
+      <Card
+        key={'barchart'}
+        variant="elevated"
+        className="shadow-sm rounded-3xl mt-4 pb-8 relative flex items-center justify-center">
+        <Text className="text-center pt-1">{filterDescription}</Text>
+        {isLoading && <ActivityIndicator />}
+        {!isLoading && totalCount === 0 && (
+          <Text className="text-center italic text-gray-400 absolute pb-6">
+            No readings yet, take a photo to start tracking!
+          </Text>
+        )}
+        <Pressable
+          className="absolute top-5 right-5"
+          onPress={() => setShowActionsheet(true)}>
+          <Search color={'grey'} />
+        </Pressable>
+        {!isLoading && (
+          <BarChart
+            data={Bars({
+              counts: filteredData ? filteredData.counts : counts,
+            })}
+            isAnimated
+            barBorderRadius={6}
+            barWidth={26}
+            height={170}
+            yAxisLabelWidth={14}
+            spacing={15}
+            labelsDistanceFromXaxis={1}
+            hideAxesAndRules
+            disableScroll
+            showValuesAsTopLabel
+          />
+        )}
+      </Card>
+      <ChartFilterActionSheet
+        showActionsheet={showActionsheet}
+        setShowActionsheet={setShowActionsheet}
+        onFetchFilteredData={handleFetchFilteredData}
+      />
+    </>
   );
 }

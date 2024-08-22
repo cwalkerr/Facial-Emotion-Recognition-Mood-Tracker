@@ -1,8 +1,10 @@
+import { Location } from '@/constants/Locations';
+
 // defines the types of each reading object
 export interface EmotionReading {
   id: number;
   emotion: string;
-  location?: string;
+  location?: Location;
   datetime: string;
   note?: string;
 }
@@ -19,7 +21,7 @@ export interface UserDataFilters {
   start_date?: string;
   end_date?: string;
   emotion?: string;
-  location?: string;
+  location?: Location;
 }
 
 const fetchUserData = async (
