@@ -9,7 +9,7 @@ import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
-import uploadPhoto from '@/services/api/uploadPhoto';
+import { uploadPhoto } from '@/services/api/uploadPhoto';
 import { useAuth } from '@clerk/clerk-expo';
 
 /**

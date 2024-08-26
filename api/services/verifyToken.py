@@ -1,7 +1,7 @@
 import jwt
 from dotenv import load_dotenv
 import os
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError, InvalidSignatureError, DecodeError, ImmatureSignatureError, InvalidAudienceError, InvalidIssuerError
 
 load_dotenv()
 JWT_PUBLIC_KEY = os.getenv("JWT_PUBLIC_KEY")
@@ -11,12 +11,23 @@ ALGORITHM = os.getenv("ALGORITHM")
 # handles token verification, no payload is required only checks if the token is valid
 def verify_token(token: str) -> dict:
     try:
-        jwt.decode(token, JWT_PUBLIC_KEY, algorithms=[ALGORITHM])
+        # leeway is set to 10 seconds, common bug was recieving ImmatureSignatureError, likely clock skew
+        jwt.decode(token, JWT_PUBLIC_KEY, algorithms=[ALGORITHM], options={'leeway': 10})
         return {"valid": True}
     except ExpiredSignatureError:
-        return {'valid': False, 'message': 'Unauthorised: Token expired'}
+        return {'valid': False, 'message': 'Token expired'}
+    except InvalidSignatureError:
+        return {'valid': False, 'message': 'Invalid signature'}
+    except DecodeError:
+        return {'valid': False, 'message': 'Decode error'}
+    except ImmatureSignatureError:
+        return {'valid': False, 'message': 'Token not yet valid'}
+    except InvalidAudienceError:
+        return {'valid': False, 'message': 'Invalid audience'}
+    except InvalidIssuerError:
+        return {'valid': False, 'message': 'Invalid issuer'}
     except InvalidTokenError as e:
-        return {'valid': False, 'message': 'Unauthorised: Invalid token'}
+        return {'valid': False, 'message': 'Invalid token'}
     except Exception as e:
         return {'valid': False, 'message': str(e)}
     

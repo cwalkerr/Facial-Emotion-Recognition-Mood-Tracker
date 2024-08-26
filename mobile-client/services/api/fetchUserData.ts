@@ -1,4 +1,5 @@
 import { Location } from '@/constants/Locations';
+import { customFetch } from './customFetch';
 
 // defines the types of each reading object
 export interface EmotionReading {
@@ -44,27 +45,25 @@ export const fetchReadings = async (
     clerk_id,
     ...filters,
   });
-
-  const response = await fetch(
-    `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading?${queryParams.toString()}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(
-      `${response.status}, ${error.message || 'Failed to get User Data'}`
+  try {
+    const response = await customFetch(
+      `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
+    return response as ReadingsResponse;
+  } catch (error) {
+    console.error(error);
+    if (error instanceof Error) {
+      throw new Error(`${error.message || 'Failed to fetch Readings'}`);
+    }
+    throw new Error('Failed to fetch readings');
   }
-
-  const result: ReadingsResponse = await response.json();
-  return result;
 };
 
 export const fetchCountsOverTime = async (
@@ -78,25 +77,23 @@ export const fetchCountsOverTime = async (
     timeframe,
   });
   emotions.forEach(emotion => queryParams.append('emotions', emotion));
-
-  const response = await fetch(
-    `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading/emotion-counts?${queryParams.toString()}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(
-      `${response.status}, ${error.message || 'Failed to get Counts Over Time'}`
+  try {
+    const response = await customFetch(
+      `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading/emotion-counts?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
+    return response as EmotionCountsOverTime;
+  } catch (error) {
+    console.error(error);
+    if (error instanceof Error) {
+      throw new Error(`${error.message || 'Failed to fetch counts over time'}`);
+    }
+    throw new Error('Failed to fetch counts over time');
   }
-
-  const result: EmotionCountsOverTime = await response.json();
-  return result as EmotionCountsOverTime;
 };

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useSignUp, useAuth } from '@clerk/clerk-expo';
 import { Href, router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import uploadId from '@/services/api/uploadClerkId';
+import { uploadId } from '@/services/api/uploadClerkId';
 import handleAuthError from '@/services/errors/handleAuthError';
 
 export default function SignUp() {

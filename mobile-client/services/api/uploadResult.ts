@@ -1,3 +1,5 @@
+import { customFetch } from './customFetch';
+
 export interface ReadingData {
   emotion: string;
   is_accurate: boolean;
@@ -8,24 +10,24 @@ export interface ReadingData {
 }
 
 // uploads the reading data to the server
-const uploadResult = async (
+export const uploadResult = async (
   readingData: ReadingData,
   token: string
 ): Promise<void> => {
-  const response = await fetch(process.env.EXPO_PUBLIC_API_DEV_URL + '/reading', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(readingData),
-  });
-  if (!response.ok) {
-    const errorMessage = await response.text();
-    throw new Error(
-      `Failed to upload reading: ${response.status} ${response.statusText} - ${errorMessage}`
-    );
+  try {
+    await customFetch(process.env.EXPO_PUBLIC_API_DEV_URL + '/reading', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(readingData),
+    });
+  } catch (error) {
+    console.error(error);
+    if (error instanceof Error) {
+      throw new Error(`${error.message || 'Failed to upload reading'}`);
+    }
+    throw new Error('Failed to upload reading');
   }
 };
-
-export default uploadResult;

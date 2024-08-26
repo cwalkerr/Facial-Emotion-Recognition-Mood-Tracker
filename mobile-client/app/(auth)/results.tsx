@@ -26,7 +26,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import EmojiCarousel from '@/components/ui/EmojiCarousel';
 import { useAuth } from '@clerk/clerk-expo';
-import uploadResult, { ReadingData } from '@/services/api/uploadResult';
+import { uploadResult, ReadingData } from '@/services/api/uploadResult';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 
 export default function Results(): React.JSX.Element {
