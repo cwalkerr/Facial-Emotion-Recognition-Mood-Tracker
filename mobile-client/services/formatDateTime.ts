@@ -10,3 +10,9 @@ export const formatTime = (isoDate: string): string => {
   const date = parseISO(isoDate);
   return format(date, 'h:mma').toLowerCase(); // i.e. '5:06pm'
 };
+
+// format short date i.e. '18/08' - used in line graph x-axis
+export const formatShortDate = (isoDate: string): string => {
+  const date = parseISO(isoDate);
+  return format(date, 'dd/MM');
+};

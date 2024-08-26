@@ -15,6 +15,6 @@ export const Colors: ColorsType = {
   SAD: '#8FDEFF',
   ANGRY: '#F45569',
   SURPRISED: '#EE9AFC',
-  SCARED: '#FF8F8F',
+  SCARED: '#FFCC69',
   DISGUSTED: '#549B75',
 };

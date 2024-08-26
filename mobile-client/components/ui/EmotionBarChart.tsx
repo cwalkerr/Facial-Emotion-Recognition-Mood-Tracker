@@ -6,13 +6,13 @@ import getEmoji from '../helpers/getEmoji';
 import { Colors } from '@/constants/Colors';
 import { Sizes } from '@/constants/Sizes';
 import { Search } from 'lucide-react-native';
-import { UserDataResponse } from '@/services/api/fetchUserData';
-import ChartFilterActionSheet from './ChartFilterActionSheet';
+import { ReadingsResponse } from '@/services/api/fetchUserData';
+import ChartFilterActionSheet from './BarChartFilterActionSheet';
 import formatFilterDescription from '@/services/formatFilterDescription';
 import { Location } from '@/constants/Locations';
 
 interface EmotionBarChartProps {
-  counts: UserDataResponse['counts'];
+  counts: ReadingsResponse['counts'];
 }
 
 const Bars = ({ counts }: EmotionBarChartProps) => {
@@ -39,7 +39,7 @@ export default function EmotionBarChart({
 }: EmotionBarChartProps): React.JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showActionsheet, setShowActionsheet] = useState<boolean>(false);
-  const [filteredData, setFilteredData] = useState<UserDataResponse | null>(null);
+  const [filteredData, setFilteredData] = useState<ReadingsResponse | null>(null);
   const [filterDescription, setFilterDescription] = useState<string>('This Week');
 
   useEffect(() => {
@@ -48,8 +48,9 @@ export default function EmotionBarChart({
     }
   }, [counts]);
 
+  // fetch the filtered data from the action sheet, format the description and set the data in state
   const handleFetchFilteredData = (
-    data: UserDataResponse,
+    data: ReadingsResponse,
     filters: { timeframe: string; location?: Location }
   ) => {
     setFilteredData(data);
@@ -79,7 +80,7 @@ export default function EmotionBarChart({
           </Text>
         )}
         <Pressable
-          className="absolute top-5 right-5"
+          className="absolute top-5 right-5 p-4"
           onPress={() => setShowActionsheet(true)}>
           <Search color={'grey'} />
         </Pressable>

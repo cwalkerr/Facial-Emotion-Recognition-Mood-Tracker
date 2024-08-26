@@ -7,69 +7,46 @@ import {
   endOfYear,
   format,
 } from 'date-fns';
-import fetchUserData, { UserDataResponse, UserDataFilters } from './fetchUserData';
-import { Location } from '@/constants/Locations';
+import { fetchReadings, ReadingsResponse, UserDataFilters } from './fetchUserData';
 
 export const fetchWeeklyData = async (
   clerk_id: string,
   token: string,
   extraFilters?: Partial<UserDataFilters>
-): Promise<UserDataResponse> => {
+): Promise<ReadingsResponse> => {
   const now = new Date();
   const timeFrame: UserDataFilters = {
     start_date: format(startOfWeek(now), 'yyyy-MM-dd'),
     end_date: format(endOfWeek(now), 'yyyy-MM-dd'),
   };
   const filters: UserDataFilters = { ...timeFrame, ...extraFilters };
-  return await fetchUserData(clerk_id, token, filters);
+  return await fetchReadings(clerk_id, token, filters);
 };
 
 export const fetchMonthlyData = async (
   clerk_id: string,
   token: string,
   extraFilters?: Partial<UserDataFilters>
-): Promise<UserDataResponse> => {
+): Promise<ReadingsResponse> => {
   const now = new Date();
   const timeFrame: UserDataFilters = {
     start_date: format(startOfMonth(now), 'yyyy-MM-dd'),
     end_date: format(endOfMonth(now), 'yyyy-MM-dd'),
   };
   const filters: UserDataFilters = { ...timeFrame, ...extraFilters };
-  return await fetchUserData(clerk_id, token, filters);
+  return await fetchReadings(clerk_id, token, filters);
 };
 
 export const fetchYearlyData = async (
   clerk_id: string,
   token: string,
   extraFilters?: Partial<UserDataFilters>
-): Promise<UserDataResponse> => {
+): Promise<ReadingsResponse> => {
   const now = new Date();
   const timeFrame: UserDataFilters = {
     start_date: format(startOfYear(now), 'yyyy-MM-dd'),
     end_date: format(endOfYear(now), 'yyyy-MM-dd'),
   };
   const filters: UserDataFilters = { ...timeFrame, ...extraFilters };
-  return await fetchUserData(clerk_id, token, filters);
-};
-
-export const fetchDataByEmotion = async (
-  clerk_id: string,
-  token: string,
-  emotion: string
-): Promise<UserDataResponse> => {
-  const filters: UserDataFilters = {
-    emotion: emotion,
-  };
-  return await fetchUserData(clerk_id, token, filters);
-};
-
-export const fetchDataByLocation = async (
-  clerk_id: string,
-  token: string,
-  location: Location
-): Promise<UserDataResponse> => {
-  const filters: UserDataFilters = {
-    location: location,
-  };
-  return await fetchUserData(clerk_id, token, filters);
+  return await fetchReadings(clerk_id, token, filters);
 };

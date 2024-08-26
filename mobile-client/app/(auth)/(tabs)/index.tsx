@@ -5,19 +5,19 @@ import { useUser } from '@clerk/clerk-expo';
 import getEmoji from '@/components/helpers/getEmoji';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 import { formatTime } from '@/services/formatDateTime';
-import { format } from 'date-fns';
-import { UserDataResponse, EmotionReading } from '@/services/api/fetchUserData';
+import { ReadingsResponse, EmotionReading } from '@/services/api/fetchUserData';
 import EmotionBarChart from '@/components/ui/EmotionBarChart';
+import { format } from 'date-fns';
 
 // defining this here makes more sense, fetch a weeks data from api as the weekly data will be needed for the chart
-// can just filter that weekly data to get the days data here as this is the only place that will need it
-const getTodaysReadings = (userDataResponse: UserDataResponse): EmotionReading[] => {
+// filter that weekly data to get the days data here as this is the only place that will need it
+const getTodaysReadings = (userDataResponse: ReadingsResponse): EmotionReading[] => {
   const today = format(new Date(), 'yyyy-MM-dd');
   // filter weekly readings to create new array with only todays readings
   const todaysReadings: EmotionReading[] = userDataResponse.readings.filter(
     reading => reading.datetime.startsWith(today)
   );
-  return todaysReadings.slice(0, 3); // not sure whether or not to enforce only 3 per day or make it scrollable.. only 3 notifications per day.
+  return todaysReadings.slice(0, 3);
 };
 
 export default function Home() {
@@ -25,12 +25,13 @@ export default function Home() {
   const { userData } = useRefreshDataContext();
 
   if (!user) return <ActivityIndicator />; // this might lead to infinite loading in rare problem cases - review
+  if (!userData)
+    return <Text>No readings to display yet, take a photo to get started!</Text>; // this will be displayed if the user has no data
 
+  // load todays readings
   let todaysReadings: EmotionReading[] = [];
+  if (userData) todaysReadings = getTodaysReadings(userData);
 
-  if (userData) {
-    todaysReadings = getTodaysReadings(userData);
-  }
   return (
     <View className="flex-1 justify-start items-center p-4 mt-4">
       <Text className="self-start ml-4 mb-2">Todays Readings</Text>
@@ -57,7 +58,7 @@ export default function Home() {
           </Card>
         ))}
       <View className="justify-end p-2">
-        {/* still want to display the empty chart is no data... bit of a dodgy workaround for ts error, but is type safe i think */}
+        {/* still want to display the empty chart if no data... bit of a dodgy workaround for ts error, but is type safe i think */}
         <EmotionBarChart
           counts={
             userData?.counts || {

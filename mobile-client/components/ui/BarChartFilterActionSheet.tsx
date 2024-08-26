@@ -29,16 +29,17 @@ import {
   fetchYearlyData,
 } from '@/services/api/userDataUtils';
 import { Alert } from 'react-native';
-import fetchUserData, {
+import {
+  fetchReadings,
   UserDataFilters,
-  UserDataResponse,
+  ReadingsResponse,
 } from '@/services/api/fetchUserData';
 
 interface ChartFilterActionSheetProps {
   showActionsheet: boolean;
   setShowActionsheet: React.Dispatch<React.SetStateAction<boolean>>;
   onFetchFilteredData: (
-    data: UserDataResponse,
+    data: ReadingsResponse,
     filters: { timeframe: string; location?: Location }
   ) => void; // callback to parent component to pass the fetched data
 }
@@ -79,12 +80,12 @@ export default function ChartFilterActionSheet({
       userId: string,
       token: string,
       filters: Partial<UserDataFilters>
-    ) => Promise<UserDataResponse>;
+    ) => Promise<ReadingsResponse>;
   } = {
     'This Week': fetchWeeklyData,
     'This Month': fetchMonthlyData,
     'This Year': fetchYearlyData,
-    'All Time': fetchUserData,
+    'All Time': fetchReadings,
   };
 
   const fetchData = async (
@@ -101,13 +102,12 @@ export default function ChartFilterActionSheet({
       handleError('Token is null');
       return;
     }
-    // NOTE TO SELF: just came across Partial in the ts docs, likely could have used it in other places
     const filters: Partial<UserDataFilters> = {};
     if (location) {
       filters.location = location; // only add location to filters if it is defined
     }
 
-    let response: UserDataResponse | null = null;
+    let response: ReadingsResponse | null = null;
     try {
       response = await timeFrameFuncs[timeframe](userId, token, filters); // call the function based on the timeframe selected
       if (response) {

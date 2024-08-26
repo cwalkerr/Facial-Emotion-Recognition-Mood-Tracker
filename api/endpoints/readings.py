@@ -1,6 +1,6 @@
-from datetime import date
-from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import date, datetime, timedelta
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
@@ -130,14 +130,14 @@ async def get_user_readings(
             query = apply_filters(query, clerk_id, start_date, end_date, emotion, location)
             result = await session.execute(query)
            # use list comprehension to format the data, label/name -> emotion/location
-           # also format the date to json readable
+           # also format the date to iso compliant string minus the seconds
            # if no location or note present, key still included just null value, keeps the json consistent
             formatted_readings = [
                 {
                     "id": row.reading_id,
                     "emotion": row.label,
                     "location": row.name,
-                    "datetime": row.datetime.isoformat(),
+                    "datetime": row.datetime.strftime('%Y-%m-%dT%H:%M'),
                     "note": row.note,
                 }
                 for row in result
@@ -172,4 +172,77 @@ async def get_user_readings(
     except Exception as error:
         return JSONResponse(content={"message": str(error)}, status_code=400)
         
+@router.get('/reading/emotion-counts')
+async def get_emotion_counts(
+    clerk_id: str,
+    timeframe: str, # 7(d), 30(d), 52(start of year)
+    emotions: List[str] = Query(None),
+    token: HTTPAuthorizationCredentials = Depends(security)
+) -> JSONResponse:
+    try:
+        verification = verify_token(token.credentials)
+        if not verification["valid"]:
+            return JSONResponse(content={"message": verification["message"]}, status_code=401)
+        async with Session() as session:
+            now = datetime.now()
+            if timeframe == '7d': # past 7 days
+                # subtract 7 days from now to get the start date
+                start_date = now - timedelta(days=7) 
+                trunc_value = 'day'
+                increment = timedelta(days=1) # provides a daily increment compatible with datetimes to use in the while loop below
+            elif timeframe == '30d': # past 30 days
+                start_date = now - timedelta (days=30) 
+                trunc_value = 'day'
+                increment = timedelta(days=1)
+            elif timeframe == '1yr': # from year start
+                start_date = now.replace(month=1, day=1)  # replace month and day to get start of year
+                trunc_value = 'week'
+                increment = timedelta(weeks=1) # for year use weekly increments
+
+            # truncates the datetimes in db to required format for grouping using the trunc_value set above 
+            # if day - remove the time part so all readings on same day are grouped as the same value
+            # if weekly - all dates within that week are grouped as the start date of the week, same for monthly..
+            truncated_date = func.date_trunc(trunc_value, Reading.datetime).label('truncated_date')
+            
+            counts = {}
+            for emotion in emotions:
+                counts[emotion] = {}
+                current_date = start_date
+                while current_date <= now:
+                    counts[emotion][current_date.strftime('%Y-%m-%d')] = 0
+                    current_date += increment
+
+            query = (
+                select(
+                    func.count(Reading.reading_id).label('count'),
+                    truncated_date,
+                    Emotion.label
+                )
+                .join(Emotion)
+                .where(
+                        Reading.clerk_id == clerk_id,
+                        Emotion.label.in_(emotions),
+                        Reading.datetime >= start_date,
+                        Reading.datetime <= now
+                    )
+                .group_by(truncated_date, Emotion.label)
+                .order_by(truncated_date)
+            )
+
+            result = await session.execute(query)
+            
+            # update the counts dict with the actual counts from the db
+            for row in result:
+                counts[row.label][row.truncated_date.strftime('%Y-%m-%d')] = row.count
+            
+            formatted_counts = {
+               emotion: [
+                {"date": date, "count": count} for date, count in counts.items()
+                ]
+                for emotion, counts in counts.items()
+            }
+            
+            return JSONResponse(content=formatted_counts, status_code=200)
     
+    except Exception as e:
+        return JSONResponse(content={"message": str(e)}, status_code=500)

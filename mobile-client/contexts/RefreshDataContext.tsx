@@ -1,12 +1,12 @@
 import React, { createContext, useState, useContext } from 'react';
-import { UserDataResponse } from '@/services/api/fetchUserData';
+import { ReadingsResponse } from '@/services/api/fetchUserData';
 
 // defines the types of the context/states values - UserDataResponse = (array of emotion readings)
 interface RefreshDataContextProps {
   isFromResults: boolean;
   setIsFromResults: React.Dispatch<React.SetStateAction<boolean>>;
-  userData: UserDataResponse | null;
-  setUserData: React.Dispatch<React.SetStateAction<UserDataResponse | null>>;
+  userData: ReadingsResponse | null;
+  setUserData: React.Dispatch<React.SetStateAction<ReadingsResponse | null>>;
 }
 
 // create context, undefined initial value
@@ -20,7 +20,7 @@ export const RefreshDataStateProvider: React.FC<{ children: React.ReactNode }> =
 }) => {
   // state to track if user came from results
   const [isFromResults, setIsFromResults] = useState<boolean>(false);
-  const [userData, setUserData] = useState<UserDataResponse | null>(null);
+  const [userData, setUserData] = useState<ReadingsResponse | null>(null);
 
   return (
     <RefreshDataContext.Provider
