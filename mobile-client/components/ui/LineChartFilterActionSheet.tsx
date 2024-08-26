@@ -188,7 +188,11 @@ export default function LineChartFilters({
           onPress={handleClose}
           // disable the button if the data is loading, and show a loading spinner on the button
           disabled={isLoading}>
-          {isLoading ? <ActivityIndicator /> : <ButtonText>Search</ButtonText>}
+          {isLoading ? (
+            <ActivityIndicator color={'white'} />
+          ) : (
+            <ButtonText>Search</ButtonText>
+          )}
         </Button>
       </ActionsheetContent>
     </Actionsheet>

@@ -79,10 +79,15 @@ export default function TabLayout() {
             tabBarStyle: {
               backgroundColor: 'transparent',
               borderTopWidth: 0,
+              elevation: 0, // remove shadow on Android
+              shadowOpacity: 0, // remove shadow on iOS
             },
             headerStyle: {
               backgroundColor: 'transparent',
+              elevation: 0,
+              shadowOpacity: 0,
             },
+            headerTitleAlign: 'center', // tailwind styling for header title not working on android, adding this here ensures it is centered
             headerTitle: () => (
               <View className="items-center justify-center mt-5">
                 {/* todays date formatted i.e. "18th August 2024" */}

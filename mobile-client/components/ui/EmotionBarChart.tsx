@@ -71,7 +71,7 @@ export default function EmotionBarChart({
       <Card
         key={'barchart'}
         variant="elevated"
-        className="shadow-sm rounded-3xl mt-4 pb-8 relative flex items-center justify-center">
+        className="shadow-sm rounded-3xl mt-2 pb-8 relative flex items-center justify-center">
         <Text className="text-center pt-1">{filterDescription}</Text>
         {isLoading && <ActivityIndicator />}
         {!isLoading && totalCount === 0 && (
@@ -80,7 +80,7 @@ export default function EmotionBarChart({
           </Text>
         )}
         <Pressable
-          className="absolute top-5 right-5 p-4"
+          className="absolute top-2 right-2 p-4 w-50 h-50 justify-center align-center z-50"
           onPress={() => setShowActionsheet(true)}>
           <Search color={'grey'} />
         </Pressable>
