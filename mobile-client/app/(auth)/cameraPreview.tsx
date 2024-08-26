@@ -1,7 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Href, Link, router } from 'expo-router';
 import React from 'react';
-import { Pressable, Text, ActivityIndicator, Alert } from 'react-native';
+import { Pressable, Text, ActivityIndicator, Alert, Platform } from 'react-native';
 import CameraFAB from '@/components/ui/CameraFab';
 import { View } from 'react-native';
 import * as Linking from 'expo-linking';
@@ -20,6 +20,7 @@ export default function Camera(): React.JSX.Element {
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [pictureSize, setPictureSize] = useState<string | undefined>(undefined);
+  const [enableButton, setEnableButton] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const { getToken } = useAuth();
 
@@ -92,7 +93,7 @@ export default function Camera(): React.JSX.Element {
 
   // permissions still loading after request, return loading spinner
   if (!permission) {
-    return <ActivityIndicator size={'small'} />;
+    return <ActivityIndicator size={'large'} />;
   }
 
   // permisssions have not been granted, show a message with instructions:
@@ -123,16 +124,10 @@ export default function Camera(): React.JSX.Element {
       </View>
     );
   }
-
-  // sets camera to ready once it loads
-  const onCameraReady = () => {
-    setIsCameraReady(true);
-  };
-
   // takes a photo of the current camera view
   const takePhoto = async (): Promise<void> => {
     let response;
-    if (cameraRef.current) {
+    if (cameraRef.current && isCameraReady) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
           base64: true,
@@ -151,12 +146,23 @@ export default function Camera(): React.JSX.Element {
           // navigate to results page with the emotion as a parameter - no need for state for this
           router.push(`/results?emotion=${response.prediction}` as Href);
         } else {
-          Alert.alert('Error', 'Failed to retrieve prediction, please try again');
+          Alert.alert('Error', 'Failed to retreive prediction, please try again');
         }
       } catch (error) {
         console.error('Error taking photo: ', error); // TODO: improve error handling
       }
     }
+  };
+
+  const onCameraReady = () => {
+    setIsCameraReady(true);
+    setTimeout(() => {
+      // enable the button after the camera is ready with delay, onCameraReady callback is called before the camera is actually ready
+      // causing errors if photo is taken immediately
+      setEnableButton(true);
+      // setting IsCameraReady(true) after the delay causes a stutter in the camera view, so adding button state is a workaround
+    }, 700); // not sure how well 700 works on all devices, but it works on the devices I have tested - dont want to make it longer than absolutely necessary
+    // switching to react-native-vision-camera may solve this as its more performant
   };
 
   return (
@@ -171,7 +177,7 @@ export default function Camera(): React.JSX.Element {
         {...(pictureSize && { pictureSize })} // only pass pictureSize if it is defined, when undefined it will use the default size
       />
       <BlurView
-        intensity={80}
+        intensity={Platform.OS === 'ios' ? 80 : 100}
         experimentalBlurMethod="dimezisBlurView" // allows the blur to work on Android - in testing, its not as good as on iOS need to find a better solution
         className="absolute top-0 left-0 w-full h-full"
       />
@@ -183,7 +189,7 @@ export default function Camera(): React.JSX.Element {
       </Link>
       {/* Button for taking photo - disabled if camera not ready to
       prevent uneccessary user action and confusion */}
-      <CameraFAB onPress={takePhoto} disabled={!isCameraReady} />
+      <CameraFAB onPress={takePhoto} disabled={!enableButton} />
     </View>
   );
 }
