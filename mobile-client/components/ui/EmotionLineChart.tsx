@@ -68,7 +68,7 @@ const processChartData = (data: EmotionCountsOverTime): ChartData => {
       }
       return accumulator;
     },
-    0
+    2
   );
   // if the highest count is less than 4, set the max value to 4, otherwise add 1 to the highest count - makes the chart look better
   const adjustedHighestCount = highestCount < 4 ? 4 : highestCount + 1;
@@ -203,6 +203,7 @@ export default function EmotionLineChart({
             endOpacity={0.3}
           />
         )}
+        {/* </ScrollView> */}
         <View className="flex-row items-center w-full relative gap-3 ml-3 justify-center">
           {(filteredData || data) &&
             Object.keys(filteredData || data).map(emotion => (

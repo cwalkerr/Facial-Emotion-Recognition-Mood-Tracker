@@ -9,6 +9,17 @@ import { ReadingsResponse, EmotionReading } from '@/services/api/fetchUserData';
 import EmotionBarChart from '@/components/ui/EmotionBarChart';
 import { format } from 'date-fns';
 
+// list of support messages to display as placeholders for reading cards
+const supportMessages: string[] = [
+  'You’re doing great, one step at a time. Keep going!',
+  'Even the darkest night will end, and the sun will rise.',
+  '“Life can only be understood backwards; but it must be lived forwards.” — Søren Kierkegaard',
+  '"Each day provides its own gifts - Marcus Aurelius"',
+  'Small progress is still progress. Celebrate every little win!',
+  '“You have power over your mind — not outside events. Realize this, and you will find strength.” — Marcus Aurelius',
+  '"The journey of a thousand miles begins with a single step.” — Lao Tzu',
+  'Don’t forget to take a moment to appreciate how far you’ve come.',
+];
 // defining this here makes more sense, fetch a weeks data from api as the weekly data will be needed for the chart
 // filter that weekly data to get the days data here as this is the only place that will need it
 const getTodaysReadings = (userDataResponse: ReadingsResponse): EmotionReading[] => {
@@ -38,7 +49,7 @@ export default function Home() {
       id: -1,
       emotion: 'null',
       datetime: 'null',
-      note: 'No reading yet, wait for the next notification or add another by taking a photo!',
+      note: 'Wait for the first notification or start today off by taking a photo!',
     });
   }
 
@@ -52,16 +63,22 @@ export default function Home() {
         <FlatList
           className="w-full flex-grow-0 p-1"
           data={displayedCards}
-          renderItem={({ item: reading }) =>
-            reading.id === -1 ? (
+          renderItem={({ item: reading, index }) => {
+            let placeholderMessage: string = '';
+            if (index === 0) {
+              placeholderMessage = reading.note!;
+            } else if (index > 0 && displayedCards[index - 1].id !== -1) {
+              placeholderMessage =
+                supportMessages[Math.floor(Math.random() * supportMessages.length)];
+            }
+            return reading.id === -1 ? (
               <Card
                 variant="elevated"
                 className="shadow-sm flex-row items-center rounded-3xl my-2 w-full">
                 <View className="flex-row items-center">
-                  <View className="items-center justify-center h-48 w-48">
-                    <Text className="text-lg font-semibold text-gray-400">
-                      {/* placeholder note for user info */}
-                      {reading.note}
+                  <View className="items-center justify-center h-[48px]">
+                    <Text className="font-semibold items-center justify-center text-gray-400">
+                      {placeholderMessage}
                     </Text>
                   </View>
                 </View>
@@ -86,8 +103,8 @@ export default function Home() {
                   </View>
                 </View>
               </Card>
-            )
-          }
+            );
+          }}
           keyExtractor={(reading, index) =>
             reading.id === -1 ? `placeholder-${index}` : reading.id.toString()
           }

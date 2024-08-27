@@ -5,14 +5,23 @@ import CameraFAB from '@/components/ui/CameraFab';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 import { fetchWeeklyData } from '@/services/api/userDataUtils';
 import { useAuth } from '@clerk/clerk-expo';
-import { ActivityIndicator, Alert, View, Text } from 'react-native';
+import { ActivityIndicator, Alert, View, Text, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isSameWeek } from 'date-fns';
 import { formatDate } from '@/services/formatDateTime';
+import { EllipsisIcon } from 'lucide-react-native';
+import {
+  Menu,
+  MenuItem,
+  MenuItemLabel,
+} from '@/components/ui/gluestack-imports/menu';
+import { LogOutIcon } from 'lucide-react-native';
+import { useClerk } from '@clerk/clerk-expo';
 
 export default function TabLayout() {
   const { getToken, userId, isLoaded } = useAuth();
   const { setUserData, isFromResults } = useRefreshDataContext();
+  const { signOut } = useClerk();
 
   const handleError = (
     logMessage: string,
@@ -89,9 +98,33 @@ export default function TabLayout() {
             },
             headerTitleAlign: 'center', // tailwind styling for header title not working on android, adding this here ensures it is centered
             headerTitle: () => (
-              <View className="items-center justify-center mt-5">
+              <View className="items-center justify-between w-full flex-row mt-5">
                 {/* todays date formatted i.e. "18th August 2024" */}
-                <Text className="text-2xl">{formatDate(new Date())}</Text>
+                <Text className="text-2xl text-center ml-3">
+                  {formatDate(new Date())}
+                </Text>
+                <Menu
+                  placement="bottom left"
+                  offset={5}
+                  crossOffset={8}
+                  className={'mr-6'}
+                  trigger={({ ...triggerProps }) => {
+                    return (
+                      <Pressable {...triggerProps} className="p-2">
+                        <EllipsisIcon size={32} color={'grey'} />
+                      </Pressable>
+                    );
+                  }}>
+                  <MenuItem
+                    onPress={() => signOut({ redirectUrl: '(public)' })}
+                    key="signOut"
+                    textValue="Sign Out">
+                    <LogOutIcon size={26} color={'#692f70'} />
+                    <MenuItemLabel size="lg" className="ml-2">
+                      Sign Out
+                    </MenuItemLabel>
+                  </MenuItem>
+                </Menu>
               </View>
             ),
           }}>

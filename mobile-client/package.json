@@ -23,6 +23,7 @@
     "@gluestack-ui/button": "^1.0.7",
     "@gluestack-ui/checkbox": "^0.1.30",
     "@gluestack-ui/fab": "^0.1.21",
+    "@gluestack-ui/menu": "^0.2.36",
     "@gluestack-ui/nativewind-utils": "^1.0.22",
     "@gluestack-ui/overlay": "^0.1.15",
     "@gluestack-ui/select": "^0.1.28",
