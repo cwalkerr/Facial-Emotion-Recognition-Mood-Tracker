@@ -64,12 +64,19 @@ export default function Home() {
           className="w-full flex-grow-0 p-1"
           data={displayedCards}
           renderItem={({ item: reading, index }) => {
-            let placeholderMessage: string = '';
-            if (index === 0) {
-              placeholderMessage = reading.note!;
-            } else if (index > 0 && displayedCards[index - 1].id !== -1) {
-              placeholderMessage =
-                supportMessages[Math.floor(Math.random() * supportMessages.length)];
+            let placeholderMessage: string = '....';
+            // check if the reading is a placeholder, -1 is the placeholder id
+            if (reading.id === -1) {
+              // if the first card is a placeholder, display the placeholder note
+              if (index === 0) {
+                placeholderMessage = reading.note!;
+                // if the previous card is not a placeholder, but this one is, display a random support message
+              } else if (index > 0 && displayedCards[index - 1].id !== -1) {
+                placeholderMessage =
+                  supportMessages[
+                    Math.floor(Math.random() * supportMessages.length)
+                  ];
+              }
             }
             return reading.id === -1 ? (
               <Card
