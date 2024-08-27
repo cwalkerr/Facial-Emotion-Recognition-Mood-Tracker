@@ -9,8 +9,8 @@ export default function PublicLayout() {
         screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen name="login" />
         <Stack.Screen name="signup" />
+        <Stack.Screen name="login" />
       </Stack>
     </SignedOut>
   );

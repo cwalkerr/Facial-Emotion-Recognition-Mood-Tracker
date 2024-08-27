@@ -1,12 +1,19 @@
 import React, { useCallback } from 'react';
-import { View, Text, TextInput, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
 import { useState } from 'react';
 import { useSignUp, useAuth } from '@clerk/clerk-expo';
-import { Href, router } from 'expo-router';
+import { Href, Link, router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { uploadId } from '@/services/api/uploadClerkId';
 import handleAuthError from '@/services/errors/handleAuthError';
+import { Image } from 'expo-image';
 
 export default function SignUp() {
   // isLoaded indicates whether Clerk has finished initialising and its components are ready to use
@@ -77,40 +84,54 @@ export default function SignUp() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center px-5">
+    <View className="flex-1 justify-start items-center mt-6">
+      <Image
+        source={require('@/assets/Logo.png')}
+        style={{ width: 200, height: 200 }}
+        className="flex-start"
+        priority={'high'}
+      />
+      <Text className="text-4xl text-center mb-5">MoodMirror</Text>
       {/* Render the view to enter email and password */}
-      {!pendingVerification && (
-        <>
-          {/* loading spinner if user initiated actions still processing, though this state shouldnt be true before signup button pressed */}
-          {isLoading ? (
-            <ActivityIndicator />
-          ) : (
-            <>
-              <Text className="text-xl">Register</Text>
-              <TextInput
-                className="h-12 border border-grey-300 rounded-lg w-full px-4 mt-5"
-                placeholder="example@email.com"
-                value={emailAddress}
-                onChangeText={email => setEmail(email)}
-              />
-              <TextInput
-                className="h-12 border border-grey-300 rounded-lg w-full px-4 mt-4 mb-6"
-                placeholder="Password"
-                value={password}
-                secureTextEntry={true} // hide password
-                onChangeText={password => setPassword(password)}
-              />
-              <Button
-                size="lg"
-                className="rounded-lg"
-                onPress={onSignUpPress}
-                disabled={!isLoaded || !emailAddress || !password || isLoading}>
-                <ButtonText>Sign Up</ButtonText>
-              </Button>
-            </>
-          )}
-        </>
-      )}
+      {!pendingVerification &&
+        (isLoading ? (
+          <ActivityIndicator />
+        ) : (
+          <View className="w-full p-6">
+            <Text className="text-2xl text-center mb-4">Sign Up</Text>
+            <Text className="text-left mb-1 ml-3">Email</Text>
+            <TextInput
+              placeholder="example@email.com"
+              value={emailAddress}
+              onChangeText={emailAddress => setEmail(emailAddress)}
+              className="h-12 border border-gray-500 rounded-2xl w-full px-4 mb-6"
+            />
+            <Text className="text-left mb-1 ml-3">Password</Text>
+            <TextInput
+              placeholder="Password"
+              value={password}
+              onChangeText={password => setPassword(password)}
+              secureTextEntry={true}
+              className="h-12 border border-gray-500 rounded-2xl w-full px-4 mb-6"
+            />
+            <Button
+              onPress={onSignUpPress}
+              size="lg"
+              className="rounded-2xl bg-custom-primary active:bg-custom-base mx-10 shadow-sm"
+              disabled={!isLoaded || isLoading || !emailAddress || !password}>
+              <ButtonText>Sign Up</ButtonText>
+            </Button>
+            <View className="mt-6">
+              <Link href="/login" asChild>
+                <TouchableOpacity>
+                  <Text className="text-lg text-center">
+                    Already have an account? Log in here!
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </View>
+        ))}
       {/* Render the view to enter email verification code */}
       {pendingVerification && (
         <>
@@ -118,11 +139,11 @@ export default function SignUp() {
             <ActivityIndicator />
           ) : (
             <>
-              <Text className="text-xl">
+              <Text className="text-xl mt-6">
                 Check your email for a verification code
               </Text>
               <TextInput
-                className="h-12 border border-grey-300 rounded-lg w-1/2 px-4 mt-5 mb-6"
+                className="h-12 border border-gray-500 rounded-2xl w-1/2 px-4 my-8"
                 placeholder="Verification Code"
                 value={code}
                 onChangeText={code => setCode(code)}
@@ -130,7 +151,7 @@ export default function SignUp() {
               <Button
                 onPress={onPressVerify}
                 size="lg"
-                className="rounded-lg"
+                className="rounded-2xl bg-custom-primary active:bg-custom-base mx-10 shadow-sm"
                 disabled={!isLoaded || isLoading || !code}>
                 <ButtonText>Verify Email</ButtonText>
               </Button>

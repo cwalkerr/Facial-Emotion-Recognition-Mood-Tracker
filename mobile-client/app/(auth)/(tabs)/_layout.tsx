@@ -31,6 +31,12 @@ export default function TabLayout() {
     Alert.alert('Error', alertMessage);
   };
 
+  // clear async storage on sign out, if signing in on a different account, this will prevent the device from loading the previous users data
+  const handleSignOut = async (): Promise<void> => {
+    await AsyncStorage.clear();
+    signOut({ redirectUrl: '(public)' });
+  };
+
   // will listen for path returning from results and refresh user data, sets it in state to be used in home/stats pages
   useEffect(() => {
     const getData = async () => {
@@ -116,7 +122,7 @@ export default function TabLayout() {
                     );
                   }}>
                   <MenuItem
-                    onPress={() => signOut({ redirectUrl: '(public)' })}
+                    onPress={handleSignOut}
                     key="signOut"
                     textValue="Sign Out">
                     <LogOutIcon size={26} color={'#692f70'} />
