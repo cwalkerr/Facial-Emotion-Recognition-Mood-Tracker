@@ -40,13 +40,13 @@ export default function Results(): React.JSX.Element {
   const { getToken, userId } = useAuth();
   const { setIsFromResults } = useRefreshDataContext();
 
-  // listens for changes in isAccurate; when false, shows the carousel that the user uses to select the correct emotion
+  // shows the carousel that the user uses to select the correct emotion if the user selects that the emotion is not accurate
   useEffect(() => {
     if (isAccurate === false) setShowCarousel(true);
   }, [isAccurate]);
 
-  // toggles the active location button
-  const toggleActiveLocation = (button: string) => {
+  // set a single location at a time allowed active across all location buttons
+  const toggleLocation = (button: string) => {
     location === button ? setLocation(null) : setLocation(button);
   };
 
@@ -71,8 +71,6 @@ export default function Results(): React.JSX.Element {
 
   // gathers the reading data and token and sends it to the server
   const sendReading = useCallback(async (): Promise<void> => {
-    // its best to get the token within the function that needs it, rather than on page mount
-    // clerk doesnt tell you how long the token is valid for
     const token = await getToken();
     const timestamp = new Date().toISOString();
 
@@ -84,8 +82,6 @@ export default function Results(): React.JSX.Element {
       handleError('Token is null');
       return;
     }
-    // keeps ts happy - cannot and should not be null at this point
-    // id say this is better than using a non-null assertion operator or making it optional within the ReadingData interface
     if (isAccurate === null) {
       handleError('isAccurate is null');
       return;
@@ -98,17 +94,14 @@ export default function Results(): React.JSX.Element {
       clerk_id: userId,
     };
     // only add optional values if they are not null
-    // better defining a helper function to clean any object
-    // though this is the only place that null values are being removed
     if (location !== null) readingData.location = location;
     if (note !== null) readingData.note = note;
 
     // send the reading data to the server
     try {
       await uploadResult(readingData, token);
-      setIsFromResults(true); // pass state to tell tabs layout to refresh user data as coming from results
-      // using replace here scraps stack to unmount the camera view, preventing memory leak,
-      // keep camera mounted before here, allows users to go back to camera from results with quicker load times
+      setIsFromResults(true); // tell tabs layout to refresh user data with new reading
+      // redirect home screen, replace to unmount camera
       router.replace(`/` as Href);
     } catch (error) {
       if (error instanceof Error) {
@@ -166,72 +159,62 @@ export default function Results(): React.JSX.Element {
           )}
           <View className="mt-6">
             <Text className="text-xl p-2 ml-3">Add location?</Text>
-            {/* this can likely be done programatically mapping icons names to location names and
-             iterating over a loop to display rather than adding each on its own*/}
             <Card variant="elevated" className="shadow-sm rounded-3xl">
               <View className="p-2 items-center">
                 <ButtonGroup space="2xl">
                   <View className="items-center">
                     <IconButton
                       icon={House}
-                      onPress={() => toggleActiveLocation('Home')}
+                      iconColor={location ? 'black' : 'white'}
+                      onPress={() => toggleLocation('Home')}
                       btnStyles={
                         location === 'Home'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'Home' ? 'font-semibold' : ''}`}>
-                      Home
-                    </Text>
+                    <Text className={`mt-1`}>Home</Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={BriefcaseBusiness}
-                      onPress={() => toggleActiveLocation('Work')}
+                      iconColor={location ? 'black' : 'white'}
+                      onPress={() => toggleLocation('Work')}
                       btnStyles={
                         location === 'Work'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'Work' ? 'font-semibold' : ''}`}>
-                      Work
-                    </Text>
+                    <Text className={`mt-1`}>Work</Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={GraduationCap}
+                      iconColor={location ? 'black' : 'white'}
                       onPress={() => {
-                        toggleActiveLocation('School');
+                        toggleLocation('School');
                       }}
                       btnStyles={
                         location === 'School'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'School' ? 'font-semibold' : ''}`}>
-                      School
-                    </Text>
+                    <Text className={`mt-1`}>School</Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={Dumbbell}
-                      onPress={() => toggleActiveLocation('Gym')}
+                      iconColor={location ? 'black' : 'white'}
+                      onPress={() => toggleLocation('Gym')}
                       btnStyles={
                         location === 'Gym'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'Gym' ? 'font-semibold' : ''}`}>
-                      Gym
-                    </Text>
+                    <Text className={`mt-1`}>Gym</Text>
                   </View>
                 </ButtonGroup>
               </View>
@@ -240,62 +223,54 @@ export default function Results(): React.JSX.Element {
                   <View className="items-center">
                     <IconButton
                       icon={TrainFront}
-                      onPress={() => toggleActiveLocation('Commute')}
+                      iconColor={location ? 'black' : 'white'}
+                      onPress={() => toggleLocation('Commute')}
                       btnStyles={
                         location === 'Commute'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'Commute' ? 'font-semibold' : ''}`}>
-                      Commute
-                    </Text>
+                    <Text className={`mt-1`}>Commute</Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={Trees}
-                      onPress={() => toggleActiveLocation('Outdoors')}
+                      iconColor={location ? 'black' : 'white'}
+                      onPress={() => toggleLocation('Outdoors')}
                       btnStyles={
                         location === 'Outdoors'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'Outdoors' ? 'font-semibold' : ''}`}>
-                      Outdoors
-                    </Text>
+                    <Text className={`mt-1`}>Outdoors</Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={Utensils}
-                      onPress={() => toggleActiveLocation('Restaurant')}
+                      iconColor={location ? 'black' : 'white'}
+                      onPress={() => toggleLocation('Restaurant')}
                       btnStyles={
                         location === 'Restaurant'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'Restaurant' ? 'font-semibold' : ''}`}>
-                      Restaurant
-                    </Text>
+                    <Text className={`mt-1`}>Restaurant</Text>
                   </View>
                   <View className="items-center">
                     <IconButton
                       icon={ShoppingCart}
-                      onPress={() => toggleActiveLocation('Shopping')}
+                      iconColor={location ? 'black' : 'white'}
+                      onPress={() => toggleLocation('Shopping')}
                       btnStyles={
                         location === 'Shopping'
-                          ? 'bg-custom-base border border-3 border-green-500'
+                          ? 'bg-purple-300 border border-3 border-green-500'
                           : ''
                       }
                     />
-                    <Text
-                      className={`mt-1 ${location === 'Shopping' ? 'font-semibold' : ''}`}>
-                      Shopping
-                    </Text>
+                    <Text className={`mt-1`}>Shopping</Text>
                   </View>
                 </ButtonGroup>
               </View>
@@ -316,7 +291,7 @@ export default function Results(): React.JSX.Element {
             <View className="mt-6 justify-end">
               <Button
                 size="xl"
-                className="rounded-2xl bg-custom-primary shadow-sm active:bg-custom-base"
+                className="rounded-2xl bg-custom-primary shadow-sm active:bg-purple-300"
                 onPress={() => sendReading()}>
                 <ButtonText>Continue</ButtonText>
               </Button>

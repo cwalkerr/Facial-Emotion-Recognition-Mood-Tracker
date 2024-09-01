@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 class Base(DeclarativeBase):
     type_annotation_map = {
         datetime.datetime: TIMESTAMP(timezone=True),
-        datetime.time: TIME(timezone=True),
+        datetime.time: TIME(timezone=False),
     }
 
 class User(Base):

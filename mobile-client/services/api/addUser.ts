@@ -1,14 +1,19 @@
 import { customFetch } from './customFetch';
 
-export const uploadId = async (clerkId: string, token: string): Promise<void> => {
+export const addUser = async (
+  clerkId: string,
+  token: string,
+  start_time: string,
+  end_time: string
+): Promise<void> => {
   try {
-    await customFetch(process.env.EXPO_PUBLIC_API_DEV_URL + '/id', {
+    await customFetch(process.env.EXPO_PUBLIC_API_DEV_URL + '/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ id: clerkId }),
+      body: JSON.stringify({ id: clerkId, start_time, end_time }),
     });
   } catch (error) {
     console.error(error);

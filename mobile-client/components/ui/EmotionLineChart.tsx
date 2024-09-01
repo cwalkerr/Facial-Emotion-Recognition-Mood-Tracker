@@ -10,7 +10,7 @@ import { formatShortDate } from '@/services/formatDateTime';
 import { Card } from './gluestack-imports/card';
 import getEmoji from '../helpers/getEmoji';
 import { Sizes } from '@/constants/Sizes';
-import { Search } from 'lucide-react-native';
+import { Menu } from 'lucide-react-native';
 import { CurveType } from 'gifted-charts-core';
 import LineChartFilters from './LineChartFilterActionSheet';
 
@@ -119,7 +119,7 @@ export default function EmotionLineChart({
   const chartHeight: number =
     (height - headerHeight * 2 - tabBarHeight * 2 - insets.top - insets.bottom) /
     1.15; //
-  const chartWidth: number = width / 1.25;
+  const chartWidth: number = width / 1.3;
 
   // process initial data - if no filteredData default of happy/sad on weekly timeframe
   const initialChartData: EmotionCountsOverTime = filteredData || data;
@@ -168,12 +168,7 @@ export default function EmotionLineChart({
         <Text className="text-center pb-2 pt-4 italic text-lg">
           {timeframeLabel}
         </Text>
-        <Pressable
-          className="absolute bottom-2 right-2 p-4 w-50 h-50 justify-center align-center z-50"
-          // actionsheet for filtering data
-          onPress={() => setShowActionsheet(true)}>
-          <Search color={'grey'} size={26} />
-        </Pressable>
+
         {isLoading && <ActivityIndicator />}
         {(filteredData || data) && (
           <LineChart
@@ -203,8 +198,13 @@ export default function EmotionLineChart({
             endOpacity={0.3}
           />
         )}
-        {/* </ScrollView> */}
         <View className="flex-row items-center w-full relative gap-3 ml-3 justify-center">
+          <Pressable
+            className="absolute top-0 right-0 p-2 w-50 h-50 z-50"
+            // actionsheet for filtering data
+            onPress={() => setShowActionsheet(true)}>
+            <Menu color={'grey'} size={28} />
+          </Pressable>
           {(filteredData || data) &&
             Object.keys(filteredData || data).map(emotion => (
               <React.Fragment key={emotion}>

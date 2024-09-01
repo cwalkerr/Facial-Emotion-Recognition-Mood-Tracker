@@ -12,6 +12,7 @@ import {
 } from '@clerk/clerk-expo';
 import { tokenCache } from '@/services/tokenCache';
 import { ActivityIndicator } from 'react-native';
+import registerNNPushToken from 'native-notify';
 
 const publishableKey: string = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
@@ -24,7 +25,7 @@ const AuthConditionalRender = () => {
   const { isSignedIn } = useAuth();
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (isSignedIn && !usePathname().includes('/notificationConfig')) {
       router.replace('(auth)' as Href);
     } else {
       // this should work wihtout the /login, (public)/_layout.tsx should deal with routing to its first screen,
@@ -34,23 +35,22 @@ const AuthConditionalRender = () => {
   }, [isSignedIn]);
   // Return Slot to ensure rendering root layout before redirecting - error without it
   return <Slot />;
-  // NOTE: cant render a stack because <SignedIn>/<SignedOut> are not allowed as children of a stack
   // bit of a hack as this renders home page first if not signed in, then redirects to signup - though its not noticeable user side
   // home content is blocked by wrapping in <SignedIn> from Clerk, so it's not a critical issue
 };
 
 export default function RootLayout() {
-  const path = usePathname();
-  console.log('Current path: ', path);
+  registerNNPushToken(
+    process.env.EXPO_PUBLIC_NATIVE_NOTIFY_APP_ID,
+    process.env.EXPO_PUBLIC_NATIVE_NOTIFY_TOKEN
+  );
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
       <GluestackUIProvider mode="light">
         <SafeAreaProvider>
           <GestureHandlerRootView className="flex-1">
             <ClerkLoading>
-              {/* render loading spinner if Clerk has not loaded yet
-                should still check for !isLoaded in sign in/up processes
-                for component specific states */}
+              {/* render loading spinner if Clerk has not loaded yet */}
               <ActivityIndicator />
             </ClerkLoading>
             <ClerkLoaded>

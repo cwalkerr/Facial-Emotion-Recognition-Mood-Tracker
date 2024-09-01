@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/gluestack-imports/menu';
 import { LogOutIcon } from 'lucide-react-native';
 import { useClerk } from '@clerk/clerk-expo';
+import { unregisterIndieDevice } from 'native-notify';
+import { StatusBar } from 'expo-status-bar';
 
 export default function TabLayout() {
   const { getToken, userId, isLoaded } = useAuth();
@@ -34,6 +36,7 @@ export default function TabLayout() {
   // clear async storage on sign out, if signing in on a different account, this will prevent the device from loading the previous users data
   const handleSignOut = async (): Promise<void> => {
     await AsyncStorage.clear();
+    unregisterIndieDevice(userId, 23234, 'FKm0BCSKvpNzIANZW8cif5');
     signOut({ redirectUrl: '(public)' });
   };
 
@@ -87,6 +90,7 @@ export default function TabLayout() {
 
   return (
     <>
+      <StatusBar style="dark" />
       <View className="flex-1">
         <Tabs
           screenOptions={{
@@ -104,9 +108,9 @@ export default function TabLayout() {
             },
             headerTitleAlign: 'center', // tailwind styling for header title not working on android, adding this here ensures it is centered
             headerTitle: () => (
-              <View className="items-center justify-between w-full flex-row mt-5">
+              <View className=" relative items-center justify-center w-full flex-row mt-5">
                 {/* todays date formatted i.e. "18th August 2024" */}
-                <Text className="text-2xl text-center ml-3">
+                <Text className="text-2xl text-center mx-20">
                   {formatDate(new Date())}
                 </Text>
                 <Menu
@@ -116,7 +120,9 @@ export default function TabLayout() {
                   className={'mr-6'}
                   trigger={({ ...triggerProps }) => {
                     return (
-                      <Pressable {...triggerProps} className="p-2">
+                      <Pressable
+                        {...triggerProps}
+                        className="absolute top-0 right-0">
                         <EllipsisIcon size={32} color={'grey'} />
                       </Pressable>
                     );
@@ -139,6 +145,7 @@ export default function TabLayout() {
             options={{
               title: 'Home',
               tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+              tabBarActiveTintColor: '#692f70',
             }}
           />
           <Tabs.Screen
@@ -148,6 +155,7 @@ export default function TabLayout() {
               tabBarIcon: ({ color }) => (
                 <TabBarIcon name="stats-chart" color={color} />
               ),
+              tabBarActiveTintColor: '#692f70',
             }}
           />
         </Tabs>

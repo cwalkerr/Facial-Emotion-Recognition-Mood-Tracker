@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "mobile-client",
-    "slug": "mobile-client",
+    "slug": "moodmirror",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "",
@@ -19,7 +19,11 @@
       "adaptiveIcon": {
         "foregroundImage": "",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +41,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "38ebd9f0-5070-4105-a171-5bad4fc2f530"
+      }
+    },
+    "owner": "toombah"
   }
 }

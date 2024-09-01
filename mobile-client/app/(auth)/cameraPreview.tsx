@@ -181,8 +181,13 @@ export default function Camera(): React.JSX.Element {
         experimentalBlurMethod="dimezisBlurView" // allows the blur to work on Android - in testing, its not as good as on iOS need to find a better solution
         className="absolute top-0 left-0 w-full h-full"
       />
+      <Text className="text-xl text-semiboold text-white bg-transparent absolute top-10 right-12 mr-10 mt-4">
+        Keep your face within the box
+      </Text>
+      <View className="absolute ml-14 mt-24 top-1/8 left-1/8 w-3/4 h-3/4 border-2 border-green-500 rounded-3xl bg-transparent" />
+
       {/* Back icon */}
-      <Link href="/" asChild className="absolute top-14 left-8">
+      <Link href="/" asChild className="absolute top-14 left-4">
         <Pressable>
           <ArrowLeft color={'white'} size={36} />
         </Pressable>

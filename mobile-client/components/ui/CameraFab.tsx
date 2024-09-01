@@ -21,7 +21,7 @@ const CameraFAB = ({
   return (
     <Fab
       // the positioning of the tabs bars is different on ios and android, ios has a larger margin - this seems to be independent of the screen size
-      className={`rounded-full w-20 bg-custom-primary active:bg-custom-base h-20 shadow-lg ${Platform.OS === 'ios' ? 'mb-12' : 'mb-4'}`}
+      className={`rounded-full w-20 bg-custom-primary active:bg-custom-base h-20 shadow-lg ${Platform.OS === 'ios' ? 'mb-10' : 'mb-4'}`}
       placement="bottom center"
       onPress={onPress}
       disabled={disabled}>

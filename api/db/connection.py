@@ -38,5 +38,5 @@ async def test_connection():
         except Exception as e:
             print("Connection failed:", e)
 
-# test connection
-asyncio.run(test_connection())
+# # test connection
+# asyncio.run(test_connection())

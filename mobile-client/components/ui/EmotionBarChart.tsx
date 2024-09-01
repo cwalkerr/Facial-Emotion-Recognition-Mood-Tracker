@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/gluestack-imports/card';
 import getEmoji from '../helpers/getEmoji';
 import { Colors } from '@/constants/Colors';
 import { Sizes } from '@/constants/Sizes';
-import { Search } from 'lucide-react-native';
+import { Menu } from 'lucide-react-native';
 import { ReadingsResponse } from '@/services/api/fetchUserData';
 import ChartFilterActionSheet from './BarChartFilterActionSheet';
 import formatFilterDescription from '@/services/formatFilterDescription';
@@ -82,7 +82,7 @@ export default function EmotionBarChart({
         <Pressable
           className="absolute top-2 right-2 p-4 w-50 h-50 justify-center align-center z-50"
           onPress={() => setShowActionsheet(true)}>
-          <Search color={'grey'} />
+          <Menu color={'grey'} size={28} />
         </Pressable>
         {!isLoading && (
           <BarChart

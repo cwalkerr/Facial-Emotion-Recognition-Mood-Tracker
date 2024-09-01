@@ -8,10 +8,9 @@ import {
 } from 'react-native';
 import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
 import { useState } from 'react';
-import { useSignUp, useAuth } from '@clerk/clerk-expo';
+import { useSignUp } from '@clerk/clerk-expo';
 import { Href, Link, router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { uploadId } from '@/services/api/uploadClerkId';
 import handleAuthError from '@/services/errors/handleAuthError';
 import { Image } from 'expo-image';
 
@@ -24,7 +23,7 @@ export default function SignUp() {
   const [password, setPassword] = useState<string>('');
   const [pendingVerification, setPendingVerification] = useState<boolean>(false);
   const [code, setCode] = useState<string>('');
-  const { getToken } = useAuth();
+
   /**
    * Sends a request to Clerk to sign up a new user
    * sends email verification code if successful
@@ -46,7 +45,6 @@ export default function SignUp() {
       setIsLoading(false);
     }
   }, [isLoaded, emailAddress, password]);
-
   /**
    * Verify the email address via code sent to user
    */
@@ -61,20 +59,14 @@ export default function SignUp() {
       if (completeSignUp.status === 'complete') {
         await setActive({ session: completeSignUp.createdSessionId }); // set active session
 
-        const clerkUserId = completeSignUp.createdUserId;
-        if (!clerkUserId) {
+        const clerkId = completeSignUp.createdUserId;
+        if (!clerkId) {
           throw new Error('No Clerk ID returned');
         }
         // store the clerk ID in secure storage
-        await SecureStore.setItemAsync('clerkUserId', clerkUserId);
-
-        const token = await getToken(); // get the JWT token
-        if (!token) {
-          throw new Error('No token found');
-        }
-        await uploadId(clerkUserId, token); // upload the clerk ID to the API to be stored in db
-
-        router.replace('(auth)' as Href); // redirect to home page after successful sign up and ID upload
+        await SecureStore.setItemAsync('clerkId', clerkId);
+        // move to the notification config screen passing the clerk ID as a query param to be sent to the server after the user has set their notification times
+        router.replace(`/notificationConfig?clerkId=${clerkId}` as Href);
       }
     } catch (e) {
       handleAuthError(e);
@@ -139,7 +131,7 @@ export default function SignUp() {
             <ActivityIndicator />
           ) : (
             <>
-              <Text className="text-xl mt-6">
+              <Text className="text-xl mt-10">
                 Check your email for a verification code
               </Text>
               <TextInput
