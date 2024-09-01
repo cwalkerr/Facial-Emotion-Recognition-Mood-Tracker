@@ -27,8 +27,7 @@ def forward_to_serving(image_data: np.ndarray) -> dict:
         response = requests.post(
             os.getenv("MODEL_PREDICT_URL"), # this is the url the docker container is running on
             json={"instances": [{"input_layer_1": image_data.tolist()}]}, # must match the input layer name in the model and must be a list
-        )
-                
+        )             
         prediction = response.json()
         most_likely_emotion_index = int(np.argmax(prediction["predictions"][0])) # get the index of the highest confidence - maps to Emotion enum
         confidence = prediction["predictions"][0][most_likely_emotion_index]        

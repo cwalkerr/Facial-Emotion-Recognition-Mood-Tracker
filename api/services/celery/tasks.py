@@ -78,7 +78,7 @@ def start_user_notification_scheduler(clerk_id: str, start_time: str, end_time: 
         print(f"Failed to start user notification scheduler for {clerk_id}: {error}")        
         
 
-
+# test functions
 
 def test_schedule_notifications():
     clerk_id = 'user_2lQF4rzaQnsst56zUbVxfTnHuth' # test user

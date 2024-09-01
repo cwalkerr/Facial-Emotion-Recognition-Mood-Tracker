@@ -48,7 +48,7 @@ export const fetchReadings = async (
   try {
     const response: ReadingsResponse | ErrorResponse = await customFetch<
       ReadingsResponse | ErrorResponse
-    >(`${process.env.EXPO_PUBLIC_API_DEV_URL}/reading?${queryParams.toString()}`, {
+    >(`${process.env.EXPO_PUBLIC_API_DEV_URL}/readings?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export const fetchCountsOverTime = async (
     const response: EmotionCountsOverTime | ErrorResponse = await customFetch<
       EmotionCountsOverTime | ErrorResponse
     >(
-      `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading/emotion-counts?${queryParams.toString()}`,
+      `${process.env.EXPO_PUBLIC_API_DEV_URL}/readings/emotion-counts?${queryParams.toString()}`,
       {
         method: 'GET',
         headers: {

@@ -20,7 +20,7 @@ export const uploadReading = async (
 ): Promise<UploadReadingResponse | ErrorResponse> => {
   try {
     const response = await customFetch<UploadReadingResponse | ErrorResponse>(
-      process.env.EXPO_PUBLIC_API_DEV_URL + '/reading',
+      process.env.EXPO_PUBLIC_API_DEV_URL + '/readings',
       {
         method: 'POST',
         headers: {
