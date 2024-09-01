@@ -40,7 +40,7 @@ interface ChartData {
 
 // process the data from the api into the format needed for the chart
 const processChartData = (data: EmotionCountsOverTime): ChartData => {
-  if (!data) throw new Error('Data is requriredto process chart data');
+  if (!data) throw new Error('Data is requrired to process chart data');
 
   // create the data sets for each emotion present
   const newDataSet: DataSetItem[] = Object.keys(data).map(emotion => ({
@@ -120,14 +120,12 @@ export default function EmotionLineChart({
     (height - headerHeight * 2 - tabBarHeight * 2 - insets.top - insets.bottom) /
     1.15; //
   const chartWidth: number = width / 1.3;
-
   // process initial data - if no filteredData default of happy/sad on weekly timeframe
   const initialChartData: EmotionCountsOverTime = filteredData || data;
   const initialProcessedData = processChartData(initialChartData);
   const [chartData, setChartData] = useState<ChartData>(initialProcessedData);
 
   const activeEmotions: string[] = Object.keys(filteredData || data); // send to LineChartFilters to display emotions already selected
-  console.log('activeEmotions', activeEmotions);
   // update chart data when new filters are selected - called after handleFetchFilteredData
   useEffect(() => {
     if (filteredData) {

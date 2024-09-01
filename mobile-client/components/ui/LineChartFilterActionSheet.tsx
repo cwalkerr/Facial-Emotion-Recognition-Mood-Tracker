@@ -35,6 +35,8 @@ import {
 } from './gluestack-imports/select';
 import { useAuth } from '@clerk/clerk-expo';
 import { ActivityIndicator, Alert } from 'react-native';
+import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
+import { ErrorResponse } from '@/services/api/customFetch';
 
 interface LineChartFilterProps {
   showActionsheet: boolean;
@@ -78,44 +80,33 @@ export default function LineChartFilters({
     }
   }, [timeframeLabel]);
 
-  const handleError = (
-    logMessage: string,
-    alertMessage: string = 'Failed to filter line chart, please try again'
-  ): void => {
-    console.error(logMessage);
-    Alert.alert('Error', alertMessage);
-  };
-
   // fetch the filtered data after the user has selected the filters, update the parent component
   const fetchFilteredData = async () => {
     try {
       const token = await getToken();
 
-      if (!userId) {
-        handleError('ClerkID is null');
+      if (!checkForNullOrUndefined({ userId, token })) {
         return;
       }
-      if (token === null) {
-        handleError('Token is null');
-        return;
-      }
-      const data: EmotionCountsOverTime = await fetchCountsOverTime(
-        userId,
-        token,
-        timeframe,
-        selectedEmotions
-      );
-      //send the filtered data to the parent component
-      onFetchFilteredData(data, {
-        emotions: selectedEmotions,
-        timeframe: timeframe,
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        handleError('Failed to fetch emotion count data', error.message);
+      const response: EmotionCountsOverTime | ErrorResponse =
+        await fetchCountsOverTime(userId!, token!, timeframe, selectedEmotions);
+
+      if ('error' in response) {
+        if (typeof response.error === 'string') {
+          return Alert.alert('Error', response.error);
+        } else {
+          return Alert.alert('Error', 'An unknown error occurred');
+        }
       } else {
-        handleError('Failed to fetch emotion count data');
+        //send the filtered data to the parent component
+        onFetchFilteredData(response, {
+          emotions: selectedEmotions,
+          timeframe: timeframe,
+        });
       }
+    } catch (error) {
+      console.error('Failed to fetch line chart data', error);
+      Alert.alert('Error', 'Failed to fetch data, please try again');
     }
   };
 

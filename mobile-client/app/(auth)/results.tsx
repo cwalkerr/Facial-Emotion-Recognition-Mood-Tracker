@@ -26,8 +26,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import EmojiCarousel from '@/components/ui/EmojiCarousel';
 import { useAuth } from '@clerk/clerk-expo';
-import { uploadResult, ReadingData } from '@/services/api/uploadResult';
+import { uploadReading, ReadingData } from '@/services/api/uploadReading';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
+import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
 
 export default function Results(): React.JSX.Element {
   const { emotion: initialEmotion } = useLocalSearchParams<{ emotion: string }>();
@@ -60,38 +61,25 @@ export default function Results(): React.JSX.Element {
       ],
     };
   });
-
-  const handleError = (
-    logMessage: string,
-    alertMessage: string = 'Failed to upload reading, please try again'
-  ): void => {
-    console.error(logMessage);
-    Alert.alert('Error', alertMessage);
-  };
-
   // gathers the reading data and token and sends it to the server
   const sendReading = useCallback(async (): Promise<void> => {
     const token = await getToken();
     const timestamp = new Date().toISOString();
 
-    if (!userId) {
-      handleError('ClerkID is null');
+    if (
+      !checkForNullOrUndefined({
+        userId,
+        isAccurate,
+        token,
+      })
+    ) {
       return;
     }
-    if (token === null) {
-      handleError('Token is null');
-      return;
-    }
-    if (isAccurate === null) {
-      handleError('isAccurate is null');
-      return;
-    }
-
     const readingData: ReadingData = {
       emotion,
-      is_accurate: isAccurate,
+      is_accurate: isAccurate!, // non null assertion is fine here because of the check above
       timestamp,
-      clerk_id: userId,
+      clerk_id: userId!,
     };
     // only add optional values if they are not null
     if (location !== null) readingData.location = location;
@@ -99,18 +87,19 @@ export default function Results(): React.JSX.Element {
 
     // send the reading data to the server
     try {
-      await uploadResult(readingData, token);
+      const response = await uploadReading(readingData, token!);
+      if ('error' in response) {
+        Alert.alert('Error', response.error);
+        return;
+      }
       setIsFromResults(true); // tell tabs layout to refresh user data with new reading
       // redirect home screen, replace to unmount camera
       router.replace(`/` as Href);
     } catch (error) {
-      if (error instanceof Error) {
-        handleError(error.message);
-      } else {
-        handleError('Unknown error occurred');
-      }
+      console.error('Error uploading reading', error);
+      Alert.alert('Error', 'Failed to upload reading, please try again');
     }
-  }, [getToken, emotion, isAccurate, location, note, uploadResult, router]);
+  }, [getToken, emotion, isAccurate, location, note, uploadReading, router]);
 
   return (
     <Animated.View style={shiftScreenOnKeyboardInput} className="flex-1">

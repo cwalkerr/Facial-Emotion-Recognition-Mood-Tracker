@@ -9,8 +9,9 @@ import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
-import { uploadPhoto } from '@/services/api/uploadPhoto';
+import { PredictionResponse, uploadPhoto } from '@/services/api/uploadPhoto';
 import { useAuth } from '@clerk/clerk-expo';
+import { ErrorResponse } from '@/services/api/customFetch';
 
 /**
  * Camera Component
@@ -86,7 +87,6 @@ export default function Camera(): React.JSX.Element {
           closestSize = size;
         }
       }
-
       return closestSize;
     };
   }, [isCameraReady, setPictureSize]);
@@ -126,7 +126,7 @@ export default function Camera(): React.JSX.Element {
   }
   // takes a photo of the current camera view
   const takePhoto = async (): Promise<void> => {
-    let response;
+    let response: PredictionResponse | ErrorResponse;
     if (cameraRef.current && isCameraReady) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
@@ -141,16 +141,23 @@ export default function Camera(): React.JSX.Element {
         } else {
           throw new Error('No photo taken');
         }
-        // 'error' is a string returned by the uploadPhoto, probably a better way to handle this
-        if (response.prediction !== 'error') {
-          // navigate to results page with the emotion as a parameter - no need for state for this
-          router.push(`/results?emotion=${response.prediction}` as Href);
+        // Check if response is an instance of ErrorResponse
+        if ('error' in response) {
+          if (response.error.includes('No face detected')) {
+            Alert.alert('No Face Detected', response.error);
+          } else {
+            Alert.alert('Error', response.error); // api returns user friendly error messages
+          }
         } else {
-          Alert.alert('Error', 'Failed to retreive prediction, please try again');
+          // navigate to results page with the emotion as a parameter
+          router.push(`/results?emotion=${response.prediction}` as Href);
         }
       } catch (error) {
-        console.error('Error taking photo: ', error); // TODO: improve error handling
+        console.error('Error taking photo:', error);
+        Alert.alert('Error', 'Failed to take photo, please try again');
       }
+    } else {
+      Alert.alert('Error', 'Camera not ready, please try again'); // precaution, button should be disabled if camera not ready
     }
   };
 

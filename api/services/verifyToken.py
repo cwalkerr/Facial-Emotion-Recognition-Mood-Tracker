@@ -15,19 +15,19 @@ def verify_token(token: str) -> dict:
         jwt.decode(token, JWT_PUBLIC_KEY, algorithms=[ALGORITHM], options={'leeway': 10})
         return {"valid": True}
     except ExpiredSignatureError:
-        return {'valid': False, 'message': 'Token expired'}
+        return {'valid': False, 'message': 'Unauthorised: Token expired'}
     except InvalidSignatureError:
-        return {'valid': False, 'message': 'Invalid signature'}
+        return {'valid': False, 'message': 'Unauthorised: Invalid signature'}
     except DecodeError:
-        return {'valid': False, 'message': 'Decode error'}
+        return {'valid': False, 'message': 'Unauthorised: Decode error'}
     except ImmatureSignatureError:
-        return {'valid': False, 'message': 'Token not yet valid'}
+        return {'valid': False, 'message': 'Unauthorised: Token not yet valid'}
     except InvalidAudienceError:
-        return {'valid': False, 'message': 'Invalid audience'}
+        return {'valid': False, 'message': 'Unauthorised: Invalid audience'}
     except InvalidIssuerError:
-        return {'valid': False, 'message': 'Invalid issuer'}
+        return {'valid': False, 'message': 'Unauthorised: Invalid issuer'}
     except InvalidTokenError as e:
-        return {'valid': False, 'message': 'Invalid token'}
+        return {'valid': False, 'message': 'Unauthorised: Invalid token'}
     except Exception as e:
         return {'valid': False, 'message': str(e)}
     

@@ -23,9 +23,10 @@ if (!publishableKey) {
 // redirect to auth or public based on sign in status
 const AuthConditionalRender = () => {
   const { isSignedIn } = useAuth();
+  const path = usePathname();
 
   useEffect(() => {
-    if (isSignedIn && !usePathname().includes('/notificationConfig')) {
+    if (isSignedIn && !path.includes('/notificationConfig')) {
       router.replace('(auth)' as Href);
     } else {
       // this should work wihtout the /login, (public)/_layout.tsx should deal with routing to its first screen,

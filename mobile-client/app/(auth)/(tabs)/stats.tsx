@@ -7,65 +7,59 @@ import {
   fetchCountsOverTime,
 } from '@/services/api/fetchUserData';
 import { Emotions } from '@/constants/Emotions';
+import { ErrorResponse } from '@/services/api/customFetch';
+import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
+import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 export default function Stats() {
   const { getToken, userId, isLoaded } = useAuth();
   const [countData, setCountData] = useState<EmotionCountsOverTime | undefined>(
     undefined
   );
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // set time for loading as countData is defined but chart still not rendered - probably better way to do this
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 200);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // if clerk is not loaded show loading spinner
+  const { isFromResults } = useRefreshDataContext(); // if clerk is not loaded show loading spinner
   if (!isLoaded) {
-    return <ActivityIndicator />;
+    return (
+      <ActivityIndicator size={'large'} className="justify-center items-center" />
+    );
   }
-  const handleError = (
-    logMessage: string,
-    alertMessage: string = 'Something went wrong, please reload the app'
-  ): void => {
-    console.error(logMessage);
-    Alert.alert('Error', alertMessage);
-  };
-
   // fetch the default filters on page load
   useEffect(() => {
     const fetchEmotionCountData = async (
       timeframe: string = '30d',
-      emotions: string[] = [Emotions.Happy, Emotions.Neutral]
+      emotions: string[] = [Emotions.Happy, Emotions.Sad]
     ) => {
       try {
         const token = await getToken();
 
-        if (!userId) {
-          handleError('ClerkID is null');
+        if (!checkForNullOrUndefined({ userId, token })) {
           return;
         }
-        if (token === null) {
-          handleError('Token is null');
+        const response: EmotionCountsOverTime | ErrorResponse =
+          await fetchCountsOverTime(userId!, token!, timeframe, emotions);
+        if ('error' in response) {
+          if (typeof response.error === 'string') {
+            Alert.alert('Error', response.error);
+          } else {
+            Alert.alert('Error', 'An unknown error occurred');
+          }
           return;
         }
-        const data: EmotionCountsOverTime = await fetchCountsOverTime(
-          userId,
-          token,
-          timeframe,
-          emotions
-        );
-        console.log(data);
-        setCountData(data);
+        setCountData(response);
       } catch (error) {
-        handleError('Failed to fetch emotion count data');
+        console.error('Failed to fetch emotion count data', error);
+        Alert.alert('Error', 'Failed to fetch emotion count data, please try again');
       }
     };
-
     fetchEmotionCountData();
-  }, [userId, getToken]);
+  }, [userId, getToken, isFromResults]);
+
+  // set time for loading as countData is defined but chart still not rendered
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [isFromResults]);
 
   return (
     <View className="flex-1 items-center justify-center">

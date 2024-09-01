@@ -1,5 +1,5 @@
 import { Location } from '@/constants/Locations';
-import { customFetch } from './customFetch';
+import { customFetch, ErrorResponse } from './customFetch';
 
 // defines the types of each reading object
 export interface EmotionReading {
@@ -39,23 +39,25 @@ export const fetchReadings = async (
   clerk_id: string,
   token: string,
   filters?: UserDataFilters
-): Promise<ReadingsResponse> => {
+): Promise<ReadingsResponse | ErrorResponse> => {
   // query params object, always include clerk id, include any filters specified
   const queryParams = new URLSearchParams({
     clerk_id,
     ...filters,
   });
   try {
-    const response = await customFetch(
-      `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading?${queryParams.toString()}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response: ReadingsResponse | ErrorResponse = await customFetch<
+      ReadingsResponse | ErrorResponse
+    >(`${process.env.EXPO_PUBLIC_API_DEV_URL}/reading?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if ('error' in response) {
+      return response as ErrorResponse;
+    }
     return response as ReadingsResponse;
   } catch (error) {
     console.error(error);
@@ -71,14 +73,16 @@ export const fetchCountsOverTime = async (
   token: string,
   timeframe: string, // ('7d', '30d', '1y')
   emotions: string[]
-): Promise<EmotionCountsOverTime> => {
+): Promise<EmotionCountsOverTime | ErrorResponse> => {
   const queryParams = new URLSearchParams({
     clerk_id,
     timeframe,
   });
   emotions.forEach(emotion => queryParams.append('emotions', emotion));
   try {
-    const response = await customFetch(
+    const response: EmotionCountsOverTime | ErrorResponse = await customFetch<
+      EmotionCountsOverTime | ErrorResponse
+    >(
       `${process.env.EXPO_PUBLIC_API_DEV_URL}/reading/emotion-counts?${queryParams.toString()}`,
       {
         method: 'GET',
@@ -88,6 +92,9 @@ export const fetchCountsOverTime = async (
         },
       }
     );
+    if ('error' in response) {
+      return response as ErrorResponse;
+    }
     return response as EmotionCountsOverTime;
   } catch (error) {
     console.error(error);

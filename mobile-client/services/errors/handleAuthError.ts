@@ -15,7 +15,7 @@ const handleAuthError = (e: unknown): void => {
     }
     return Alert.alert(firstError.longMessage || firstError.message);
   } else if (e instanceof Error && e.message.includes('Unauthorized')) {
-    return Alert.alert('Authentication failed, please try again later.');
+    return Alert.alert('Authentication with server failed, please try again.');
   }
   return Alert.alert('An error occurred, please try again.');
 };

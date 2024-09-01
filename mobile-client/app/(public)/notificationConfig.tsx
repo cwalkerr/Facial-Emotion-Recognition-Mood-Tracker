@@ -35,9 +35,7 @@ export default function NotificationConfig() {
     const token = await getToken();
 
     try {
-      if (!token) {
-        throw new Error('No token found');
-      }
+      if (!token) throw new Error('No token found');
       // add the user to the database
       await addUser(
         typeof clerkId === 'string' ? clerkId : clerkId[0],

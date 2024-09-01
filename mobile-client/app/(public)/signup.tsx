@@ -29,7 +29,7 @@ export default function SignUp() {
    * sends email verification code if successful
    */
   const onSignUpPress = useCallback(async (): Promise<void> => {
-    setIsLoading(true); // user has initiated sign up process
+    setIsLoading(true);
     if (!isLoaded) return; // don't attempt to sign up if Clerk hasn't loaded yet
 
     try {
@@ -74,7 +74,6 @@ export default function SignUp() {
       setIsLoading(false);
     }
   };
-
   return (
     <View className="flex-1 justify-start items-center mt-6">
       <Image
@@ -110,7 +109,9 @@ export default function SignUp() {
               onPress={onSignUpPress}
               size="lg"
               className="rounded-2xl bg-custom-primary active:bg-custom-base mx-10 shadow-sm"
-              disabled={!isLoaded || isLoading || !emailAddress || !password}>
+              disabled={
+                !isLoaded || isLoading || emailAddress == '' || password == ''
+              }>
               <ButtonText>Sign Up</ButtonText>
             </Button>
             <View className="mt-6">
@@ -144,7 +145,7 @@ export default function SignUp() {
                 onPress={onPressVerify}
                 size="lg"
                 className="rounded-2xl bg-custom-primary active:bg-custom-base mx-10 shadow-sm"
-                disabled={!isLoaded || isLoading || !code}>
+                disabled={!isLoaded || isLoading || code == ''}>
                 <ButtonText>Verify Email</ButtonText>
               </Button>
             </>

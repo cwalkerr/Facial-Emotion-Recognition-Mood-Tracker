@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { Card } from '@/components/ui/gluestack-imports/card';
@@ -37,16 +37,10 @@ const Bars = ({ counts }: EmotionBarChartProps) => {
 export default function EmotionBarChart({
   counts,
 }: EmotionBarChartProps): React.JSX.Element {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showActionsheet, setShowActionsheet] = useState<boolean>(false);
   const [filteredData, setFilteredData] = useState<ReadingsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [filterDescription, setFilterDescription] = useState<string>('This Week');
-
-  useEffect(() => {
-    if (counts) {
-      setIsLoading(false);
-    }
-  }, [counts]);
 
   // fetch the filtered data from the action sheet, format the description and set the data in state
   const handleFetchFilteredData = (
@@ -61,7 +55,11 @@ export default function EmotionBarChart({
 
   // check the total count, if 0 display a message to take a reading
   let totalCount = 0;
-  if (!isLoading && counts) {
+  if (counts) {
+    // counts will always be 0 if there are no readings, wait incase actual data is loading
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
     for (const key in counts) {
       totalCount += counts[key];
     }
@@ -74,7 +72,7 @@ export default function EmotionBarChart({
         className="shadow-sm rounded-3xl mt-2 pb-8 relative flex items-center justify-center">
         <Text className="text-center pt-1">{filterDescription}</Text>
         {isLoading && <ActivityIndicator />}
-        {!isLoading && totalCount === 0 && (
+        {totalCount === 0 && !isLoading && (
           <Text className="text-center italic text-gray-400 absolute pb-6">
             No readings yet, take a photo to start tracking!
           </Text>
@@ -84,23 +82,21 @@ export default function EmotionBarChart({
           onPress={() => setShowActionsheet(true)}>
           <Menu color={'grey'} size={28} />
         </Pressable>
-        {!isLoading && (
-          <BarChart
-            data={Bars({
-              counts: filteredData ? filteredData.counts : counts,
-            })}
-            isAnimated
-            barBorderRadius={6}
-            barWidth={26}
-            height={170}
-            yAxisLabelWidth={14}
-            spacing={15}
-            labelsDistanceFromXaxis={1}
-            hideAxesAndRules
-            disableScroll
-            showValuesAsTopLabel
-          />
-        )}
+        <BarChart
+          data={Bars({
+            counts: filteredData ? filteredData.counts : counts,
+          })}
+          isAnimated
+          barBorderRadius={6}
+          barWidth={26}
+          height={170}
+          yAxisLabelWidth={14}
+          spacing={15}
+          labelsDistanceFromXaxis={1}
+          hideAxesAndRules
+          disableScroll
+          showValuesAsTopLabel
+        />
       </Card>
       <ChartFilterActionSheet
         showActionsheet={showActionsheet}

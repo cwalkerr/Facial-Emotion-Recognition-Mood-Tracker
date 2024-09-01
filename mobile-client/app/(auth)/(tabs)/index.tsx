@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, Text, FlatList } from 'react-native';
 import { Card } from '@/components/ui/gluestack-imports/card';
-import { useUser } from '@clerk/clerk-expo';
 import getEmoji from '@/components/helpers/getEmoji';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 import { formatTime } from '@/services/formatDateTime';
@@ -20,8 +19,7 @@ const supportMessages: string[] = [
   '"The journey of a thousand miles begins with a single step.” — Lao Tzu',
   'Don’t forget to take a moment to appreciate how far you’ve come.',
 ];
-// defining this here makes more sense, fetch a weeks data from api as the weekly data will be needed for the chart
-// filter that weekly data to get the days data here as this is the only place that will need it
+// get todays readings from the weekly readings stored in the user data context
 const getTodaysReadings = (userDataResponse: ReadingsResponse): EmotionReading[] => {
   const today = format(new Date(), 'yyyy-MM-dd');
   // filter weekly readings to create new array with only todays readings
@@ -32,10 +30,7 @@ const getTodaysReadings = (userDataResponse: ReadingsResponse): EmotionReading[]
 };
 
 export default function Home() {
-  const { user } = useUser();
   const { userData } = useRefreshDataContext();
-
-  if (!user) throw new Error('User is null');
 
   // load todays readings
   let todaysReadings: EmotionReading[] = [];
@@ -116,12 +111,12 @@ export default function Home() {
             reading.id === -1 ? `placeholder-${index}` : reading.id.toString()
           }
           scrollEnabled={displayedCards.length > 3} // scroll if more than 3 cards
-          style={{ height: 3 * 92 }} //  the height of 3 cards - from the devices i have tested on these all work at the fixed height - should cover most devices, small devices may have a slight overflow with CameraFAB
+          style={{ height: 3 * 92 }} //  the height of 3 cards - from the devices i have tested on these all work at the fixed height - should cover most devices, very small devices may have a slight overflow with CameraFAB
           showsVerticalScrollIndicator={false}
         />
       )}
       <View className="justify-end p-2">
-        {/* still want to display the empty chart if no data... bit of a dodgy workaround for ts error, but is type safe i think */}
+        {/* still want to display the empty chart if no data... bit of a dodgy workaround for ts error*/}
         <EmotionBarChart
           counts={
             userData?.counts || {

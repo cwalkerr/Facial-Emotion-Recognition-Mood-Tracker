@@ -8,12 +8,13 @@ import {
   format,
 } from 'date-fns';
 import { fetchReadings, ReadingsResponse, UserDataFilters } from './fetchUserData';
+import { ErrorResponse } from './customFetch';
 
 export const fetchWeeklyData = async (
   clerk_id: string,
   token: string,
   extraFilters?: Partial<UserDataFilters>
-): Promise<ReadingsResponse> => {
+): Promise<ReadingsResponse | ErrorResponse> => {
   const now = new Date();
   const timeFrame: UserDataFilters = {
     start_date: format(startOfWeek(now), 'yyyy-MM-dd'),
@@ -27,7 +28,7 @@ export const fetchMonthlyData = async (
   clerk_id: string,
   token: string,
   extraFilters?: Partial<UserDataFilters>
-): Promise<ReadingsResponse> => {
+): Promise<ReadingsResponse | ErrorResponse> => {
   const now = new Date();
   const timeFrame: UserDataFilters = {
     start_date: format(startOfMonth(now), 'yyyy-MM-dd'),
@@ -41,7 +42,7 @@ export const fetchYearlyData = async (
   clerk_id: string,
   token: string,
   extraFilters?: Partial<UserDataFilters>
-): Promise<ReadingsResponse> => {
+): Promise<ReadingsResponse | ErrorResponse> => {
   const now = new Date();
   const timeFrame: UserDataFilters = {
     start_date: format(startOfYear(now), 'yyyy-MM-dd'),

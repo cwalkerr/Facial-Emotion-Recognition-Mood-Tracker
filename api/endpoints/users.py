@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from services.verifyToken import verify_token
@@ -35,6 +35,9 @@ async def add_user(request: Users, token: HTTPAuthorizationCredentials = Depends
             # start the user's notification scheduler
             start_user_notification_scheduler(request.id, request.start_time, request.end_time)
             
-        return JSONResponse(content={"message": "User added successfully"}, status_code=200)
-    except Exception as error:
-        return JSONResponse(content={"message": str(error)}, status_code=400)
+        return JSONResponse(content={"message": "User added successfully"}, status_code=201)
+    except HTTPException as e:
+        return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
+    except Exception as e:
+        print("Unexpected error: ", e.with_traceback)
+        return JSONResponse(content={"error": "Error adding user, please try again"}, status_code=500)

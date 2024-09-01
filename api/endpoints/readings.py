@@ -58,7 +58,7 @@ async def upload_reading(
                 select(Emotion.emotion_id).where(Emotion.label == request.emotion.capitalize()))
             emotion_id = emotion_result.scalar_one_or_none()
             if emotion_id is None:
-                return JSONResponse(content={"message": "Invalid emotion"}, status_code=400)
+                return JSONResponse(content={"error": "Invalid emotion"}, status_code=400)
             
             # get location id if request.location included
             location_id = None # init to none to prevent error accessing in reading object, could conditionally add it to reading object but this is less verbose
@@ -68,7 +68,7 @@ async def upload_reading(
                 )
                 location_id = location_result.scalar_one_or_none()
                 if location_id is None:
-                    return JSONResponse(content={"message": "Invalid location"}, status_code=400)
+                    return JSONResponse(content={"error": "Invalid location"}, status_code=400)
             
             # add the reading
             new_reading = Reading(
@@ -89,12 +89,12 @@ async def upload_reading(
             
             await session.commit()
             
-        return JSONResponse(content={"message": "Reading uploaded successfully"}, status_code=200)
-    except HTTPException as error:
-        # this error is thrown by get_user_id... if user not found
-        return JSONResponse(content={"message": error.detail}, status_code=error.status_code)
-    except Exception as error:
-        return JSONResponse(content={"message": str(error)}, status_code=400)
+        return JSONResponse(content={"message": "Reading uploaded successfully"}, status_code=201)
+    except HTTPException as e:
+        return JSONResponse(content={"error": str(e.detail)}, status_code=e.status_code)
+    except Exception as e:
+        print("Unexpected error: ", e.with_traceback)
+        return JSONResponse(content={"error": "Error uploading reading, please try again"}, status_code=500)
 
 # Gets the users readings, can add optional filters for timeframe, emotion and location
 # orders by datetime by default, makes it easier to display the most recent on client   
@@ -129,7 +129,7 @@ async def get_user_readings(
             )
             query = apply_filters(query, clerk_id, start_date, end_date, emotion, location)
             result = await session.execute(query)
-           # use list comprehension to format the data, label/name -> emotion/location
+           # format the data, label/name -> emotion/location
            # also format the date to iso compliant string minus the seconds
            # if no location or note present, key still included just null value, keeps the json consistent
             formatted_readings = [
@@ -169,8 +169,11 @@ async def get_user_readings(
             }
             
             return JSONResponse(content=response, status_code=200)
-    except Exception as error:
-        return JSONResponse(content={"message": str(error)}, status_code=400)
+    except HTTPException as e:
+        return JSONResponse(content={"error": str(e.detail)}, status_code=e.status_code)    
+    except Exception as e:
+        print("Unexpected error: ", e.with_traceback)
+        return JSONResponse(content={"error": "Error retrieving readings, please try again"}, status_code=500)
         
 @router.get('/reading/emotion-counts')
 async def get_emotion_counts(
@@ -243,6 +246,8 @@ async def get_emotion_counts(
             }
             
             return JSONResponse(content=formatted_counts, status_code=200)
-    
+    except HTTPException as e:
+        return JSONResponse(content={"error": str(e.detail)}, status_code=e.status_code)
     except Exception as e:
-        return JSONResponse(content={"message": str(e)}, status_code=500)
+        print("Unexpected error: ", e.with_traceback)
+        return JSONResponse(content={"error": "Error retrieving emotion counts, please try again"}, status_code=500)

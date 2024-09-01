@@ -14,10 +14,10 @@ import { Image } from 'expo-image';
 
 export default function Login(): React.JSX.Element {
   const { signIn, setActive, isLoaded } = useSignIn();
-  const [emailAddress, setEmail] = React.useState('');
+  const [emailAddress, setEmail] = useState<string>('');
   // see comments in /signup.tsx for more info on isLoading
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [password, setPassword] = React.useState('');
+  const [password, setPassword] = useState<string>('');
 
   const onSignInPress = useCallback(async (): Promise<void> => {
     setIsLoading(true);
@@ -29,12 +29,10 @@ export default function Login(): React.JSX.Element {
       });
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
-        // will just check token and fetch user data in auth before render
-        // prevents checking token here just to send it again 1 second later
         router.replace('(auth)' as Href);
       }
-    } catch (e) {
-      handleAuthError(e);
+    } catch (error) {
+      handleAuthError(error);
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +72,9 @@ export default function Login(): React.JSX.Element {
               onPress={onSignInPress}
               size="lg"
               className="rounded-2xl bg-custom-primary active:bg-custom-base mx-10 shadow-sm"
-              disabled={!isLoaded || isLoading || !emailAddress || !password}>
+              disabled={
+                !isLoaded || isLoading || emailAddress == '' || password == ''
+              }>
               <ButtonText>Log In</ButtonText>
             </Button>
             <View className="mt-6">

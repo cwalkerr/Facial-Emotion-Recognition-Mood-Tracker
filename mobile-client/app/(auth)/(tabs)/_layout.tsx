@@ -5,7 +5,7 @@ import CameraFAB from '@/components/ui/CameraFab';
 import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
 import { fetchWeeklyData } from '@/services/api/userDataUtils';
 import { useAuth } from '@clerk/clerk-expo';
-import { ActivityIndicator, Alert, View, Text, Pressable } from 'react-native';
+import { Alert, View, Text, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isSameWeek } from 'date-fns';
 import { formatDate } from '@/services/formatDateTime';
@@ -19,19 +19,14 @@ import { LogOutIcon } from 'lucide-react-native';
 import { useClerk } from '@clerk/clerk-expo';
 import { unregisterIndieDevice } from 'native-notify';
 import { StatusBar } from 'expo-status-bar';
+import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
+import { ReadingsResponse } from '@/services/api/fetchUserData';
+import { ErrorResponse } from '@/services/api/customFetch';
 
 export default function TabLayout() {
   const { getToken, userId, isLoaded } = useAuth();
-  const { setUserData, isFromResults } = useRefreshDataContext();
+  const { setUserData, isFromResults, userData } = useRefreshDataContext();
   const { signOut } = useClerk();
-
-  const handleError = (
-    logMessage: string,
-    alertMessage: string = 'Something went wrong, please reload the app'
-  ): void => {
-    console.error(logMessage);
-    Alert.alert('Error', alertMessage);
-  };
 
   // clear async storage on sign out, if signing in on a different account, this will prevent the device from loading the previous users data
   const handleSignOut = async (): Promise<void> => {
@@ -43,26 +38,28 @@ export default function TabLayout() {
   // will listen for path returning from results and refresh user data, sets it in state to be used in home/stats pages
   useEffect(() => {
     const getData = async () => {
-      if (!isLoaded) return <ActivityIndicator />;
-
       const token = await getToken();
 
-      if (!userId) {
-        handleError('ClerkID is null');
-        return;
-      }
-      if (token === null) {
-        handleError('Token is null');
+      if (!checkForNullOrUndefined({ userId, token }) || !isLoaded) {
         return;
       }
       // if navigated from results call api to refresh data
-      // fetching weekly data in this case is not necessary, i suppose the recently added result could be passsed here in query params
-      // then added to the existing data, but this is fine for now
       if (isFromResults) {
-        const data = await fetchWeeklyData(userId, token);
-        setUserData(data);
+        const response: ReadingsResponse | ErrorResponse = await fetchWeeklyData(
+          userId!,
+          token!
+        );
+        if ('error' in response) {
+          if (typeof response.error === 'string') {
+            Alert.alert('Error', response.error);
+          } else {
+            Alert.alert('Error', 'An unknown error occurred');
+          }
+          return;
+        }
+        setUserData(response);
         // save new data in persistant storage
-        await AsyncStorage.setItem('userData', JSON.stringify(data));
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
         await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
       } else {
         // on component mount (app reload) check if data exists in persistant storage
@@ -77,10 +74,22 @@ export default function TabLayout() {
         ) {
           setUserData(JSON.parse(storedData));
         } else {
-          // if its a new week, or no data in storage, get fresh data, again, probably redundant as there will be no data, but easy way to reset the persistant storage to null
-          const data = await fetchWeeklyData(userId, token);
-          setUserData(data);
-          await AsyncStorage.setItem('userData', JSON.stringify(data));
+          // if its a new week, or no data in storage, get fresh data, set in state and persistant storage
+          // if its a new week then theres likely no data in the db, but incase there are persistant storage problems
+          const response: ReadingsResponse | ErrorResponse = await fetchWeeklyData(
+            userId!,
+            token!
+          );
+          if ('error' in response) {
+            if (typeof response.error === 'string') {
+              Alert.alert('Error', response.error);
+            } else {
+              Alert.alert('Error', 'An unknown error occurred');
+            }
+            return;
+          }
+          setUserData(response);
+          await AsyncStorage.setItem('userData', JSON.stringify(response));
           await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
         }
       }

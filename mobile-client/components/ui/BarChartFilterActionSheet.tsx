@@ -34,6 +34,8 @@ import {
   UserDataFilters,
   ReadingsResponse,
 } from '@/services/api/fetchUserData';
+import { ErrorResponse } from '@/services/api/customFetch';
+import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
 
 interface ChartFilterActionSheetProps {
   showActionsheet: boolean;
@@ -51,14 +53,6 @@ export default function ChartFilterActionSheet({
 }: ChartFilterActionSheetProps): React.JSX.Element {
   const [location, setLocation] = useState<Location | undefined>(undefined);
   const { getToken, userId } = useAuth();
-
-  const handleError = (
-    logMessage: string,
-    alertMessage: string = 'Failed to filter readings, please try again'
-  ): void => {
-    console.error(logMessage);
-    Alert.alert('Error', alertMessage);
-  };
 
   const handleClose = () => {
     setShowActionsheet(false);
@@ -80,7 +74,7 @@ export default function ChartFilterActionSheet({
       userId: string,
       token: string,
       filters: Partial<UserDataFilters>
-    ) => Promise<ReadingsResponse>;
+    ) => Promise<ReadingsResponse | ErrorResponse>;
   } = {
     'This Week': fetchWeeklyData,
     'This Month': fetchMonthlyData,
@@ -94,12 +88,7 @@ export default function ChartFilterActionSheet({
   ): Promise<void> => {
     const token = await getToken();
 
-    if (!userId) {
-      handleError('ClerkID is null');
-      return;
-    }
-    if (token === null) {
-      handleError('Token is null');
+    if (!checkForNullOrUndefined({ userId, token })) {
       return;
     }
     const filters: Partial<UserDataFilters> = {};
@@ -107,18 +96,23 @@ export default function ChartFilterActionSheet({
       filters.location = location; // only add location to filters if it is defined
     }
 
-    let response: ReadingsResponse | null = null;
+    let response: ReadingsResponse | ErrorResponse | null = null;
     try {
-      response = await timeFrameFuncs[timeframe](userId, token, filters); // call the function based on the timeframe selected
-      if (response) {
-        onFetchFilteredData(response, { timeframe, location }); // pass the response to the parent component
+      response = await timeFrameFuncs[timeframe](userId!, token!, filters); // call the function based on the timeframe selected
+      if ('error' in response) {
+        Alert.alert('Error', response.error);
+        return;
       }
+      if ('readings' in response) {
+        onFetchFilteredData(response, { timeframe, location });
+        return;
+      }
+      throw new Error(
+        'Response at BarChartFilters does not contain readings or an error'
+      );
     } catch (error) {
-      if (error instanceof Error) {
-        handleError(error.message);
-      } else {
-        handleError('An unknown error occurred');
-      }
+      console.error('Failed to fetch data', error);
+      Alert.alert('Error', 'Failed to fetch data, please try again');
     }
   };
   return (
