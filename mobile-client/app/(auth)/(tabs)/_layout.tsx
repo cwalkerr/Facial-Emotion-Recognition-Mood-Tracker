@@ -1,13 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Href, Tabs, router } from 'expo-router';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import CameraFAB from '@/components/ui/CameraFab';
-import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
-import { fetchWeeklyData } from '@/services/api/userDataUtils';
 import { useAuth } from '@clerk/clerk-expo';
-import { Alert, View, Text, Pressable } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isSameWeek } from 'date-fns';
+import { View, Text, Pressable } from 'react-native';
 import { formatDate } from '@/services/formatDateTime';
 import { EllipsisIcon } from 'lucide-react-native';
 import {
@@ -19,83 +15,17 @@ import { LogOutIcon } from 'lucide-react-native';
 import { useClerk } from '@clerk/clerk-expo';
 import { unregisterIndieDevice } from 'native-notify';
 import { StatusBar } from 'expo-status-bar';
-import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
-import { ReadingsResponse } from '@/services/api/fetchUserData';
-import { ErrorResponse } from '@/services/api/customFetch';
 
+// Tab layout for the app, contains the header, tabs and camera FAB, also handles sign out from the header
 export default function TabLayout() {
-  const { getToken, userId, isLoaded } = useAuth();
-  const { setUserData, isFromResults, userData } = useRefreshDataContext();
+  const { userId } = useAuth();
   const { signOut } = useClerk();
 
-  // clear async storage on sign out, if signing in on a different account, this will prevent the device from loading the previous users data
+  // clear notification token and sign out
   const handleSignOut = async (): Promise<void> => {
-    await AsyncStorage.clear();
     unregisterIndieDevice(userId, 23234, 'FKm0BCSKvpNzIANZW8cif5');
     signOut({ redirectUrl: '(public)' });
   };
-
-  // will listen for path returning from results and refresh user data, sets it in state to be used in home/stats pages
-  useEffect(() => {
-    const getData = async () => {
-      const token = await getToken();
-
-      if (!checkForNullOrUndefined({ userId, token }) || !isLoaded) {
-        return;
-      }
-      // if navigated from results call api to refresh data
-      if (isFromResults) {
-        const response: ReadingsResponse | ErrorResponse = await fetchWeeklyData(
-          userId!,
-          token!
-        );
-        if ('error' in response) {
-          if (typeof response.error === 'string') {
-            Alert.alert('Error', response.error);
-          } else {
-            Alert.alert('Error', 'An unknown error occurred');
-          }
-          return;
-        }
-        setUserData(response);
-        // save new data in persistant storage
-        await AsyncStorage.setItem('userData', JSON.stringify(userData));
-        await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
-      } else {
-        // on component mount (app reload) check if data exists in persistant storage
-        const storedData = await AsyncStorage.getItem('userData');
-        const lastFetchedDate = await AsyncStorage.getItem('lastFetchedDate');
-        const currentDate = new Date();
-        // if data stored is within the current week, retrieve from persistant storage
-        if (
-          storedData &&
-          lastFetchedDate &&
-          isSameWeek(new Date(lastFetchedDate), currentDate)
-        ) {
-          setUserData(JSON.parse(storedData));
-        } else {
-          // if its a new week, or no data in storage, get fresh data, set in state and persistant storage
-          // if its a new week then theres likely no data in the db, but incase there are persistant storage problems
-          const response: ReadingsResponse | ErrorResponse = await fetchWeeklyData(
-            userId!,
-            token!
-          );
-          if ('error' in response) {
-            if (typeof response.error === 'string') {
-              Alert.alert('Error', response.error);
-            } else {
-              Alert.alert('Error', 'An unknown error occurred');
-            }
-            return;
-          }
-          setUserData(response);
-          await AsyncStorage.setItem('userData', JSON.stringify(response));
-          await AsyncStorage.setItem('lastFetchedDate', new Date().toISOString());
-        }
-      }
-    };
-    getData();
-  }, [isFromResults, getToken, userId, isLoaded]);
 
   return (
     <>
@@ -172,7 +102,7 @@ export default function TabLayout() {
       {/* Opens Camera Preview - Positioned centre of tabs raised*/}
       <CameraFAB
         onPress={() => {
-          router.push('cameraPreview' as Href);
+          router.replace('cameraPreview' as Href);
         }}
       />
     </>

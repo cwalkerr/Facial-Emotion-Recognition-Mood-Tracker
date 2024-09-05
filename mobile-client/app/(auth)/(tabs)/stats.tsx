@@ -8,21 +8,16 @@ import {
 } from '@/services/api/fetchUserData';
 import { Emotions } from '@/constants/Emotions';
 import { ErrorResponse } from '@/services/api/customFetch';
-import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
-import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
+import { useUserDataContext } from '@/contexts/RefreshDataContext';
+
 export default function Stats() {
-  const { getToken, userId, isLoaded } = useAuth();
+  const { userId, getToken } = useAuth();
+  const { userData } = useUserDataContext();
   const [countData, setCountData] = useState<EmotionCountsOverTime | undefined>(
     undefined
   );
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const { isFromResults } = useRefreshDataContext(); // if clerk is not loaded show loading spinner
-  if (!isLoaded) {
-    return (
-      <ActivityIndicator size={'large'} className="justify-center items-center" />
-    );
-  }
-  // fetch the default filters on page load
+
+  // Fetch new data when userData changes
   useEffect(() => {
     const fetchEmotionCountData = async (
       timeframe: string = '30d',
@@ -30,8 +25,7 @@ export default function Stats() {
     ) => {
       try {
         const token = await getToken();
-
-        if (!checkForNullOrUndefined({ userId, token })) {
+        if (!userId || !token || !userData) {
           return;
         }
         const response: EmotionCountsOverTime | ErrorResponse =
@@ -50,24 +44,25 @@ export default function Stats() {
         Alert.alert('Error', 'Failed to fetch emotion count data, please try again');
       }
     };
-    fetchEmotionCountData();
-  }, [userId, getToken, isFromResults]);
 
-  // set time for loading as countData is defined but chart still not rendered
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [isFromResults]);
+    fetchEmotionCountData();
+  }, [userData]);
+
+  const getTotalCounts = (countData: EmotionCountsOverTime): number => {
+    return Object.keys(countData).reduce((total, emotion) => {
+      const emotionCounts = countData[emotion];
+      const emotionTotal = emotionCounts.reduce((sum, { count }) => sum + count, 0);
+      return total + emotionTotal;
+    }, 0);
+  };
 
   return (
     <View className="flex-1 items-center justify-center">
       <View className="mx-4 mb-28">
         {/* display loading spinner defined at top of component */}
-        {isLoading ? (
+        {!countData ? (
           <ActivityIndicator />
-        ) : countData ? (
+        ) : getTotalCounts(countData) > 0 ? (
           // if user has data, display the line chart with the default filters
           <EmotionLineChart data={countData} />
         ) : (

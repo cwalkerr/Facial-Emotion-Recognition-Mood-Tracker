@@ -10,7 +10,7 @@ from db.queries import insert_reading, select_emotion_counts_over_time, select_u
 router = APIRouter()
 security = HTTPBearer()
 
-class ReadingPostRequest(BaseModel):
+class ReadingData(BaseModel):
     emotion: str
     is_accurate: bool
     location: Optional[str] = None
@@ -20,9 +20,30 @@ class ReadingPostRequest(BaseModel):
 
 @router.post("/readings")
 async def upload_reading( 
-    request: ReadingPostRequest,
+    request: ReadingData,
     token: HTTPAuthorizationCredentials = Depends(security)
 ) -> JSONResponse:
+    """
+    Upload a new reading.
+
+    Uploads a new emotion reading. Token is verified before the reading is saved to the database.
+
+    Args:
+        request (ReadingData): The reading data to be uploaded.
+        token (HTTPAuthorizationCredentials): The authorisation token provided by the user.
+
+    Returns:
+        JSONResponse: A JSON response containing the added reading data, or an error message.
+
+    Raises:
+        HTTPException: If invalid data is provided in the request.
+        Exception: For any other unexpected errors.
+
+    Responses:
+        201: Reading uploaded successfully.
+        401: Unauthorised - Invalid token.
+        500: Internal Server Error - Error uploading reading.
+    """
     try :
         # verify token
         verification = verify_token(token.credentials)
@@ -38,8 +59,7 @@ async def upload_reading(
         print("Unexpected error: ", e.with_traceback)
         return JSONResponse(content={"error": "Error uploading reading, please try again"}, status_code=500)
 
-# Gets the users readings, can add optional filters for timeframe, emotion and location
-# orders by datetime by default, makes it easier to display the most recent on client   
+ 
 @router.get('/readings')
 async def get_user_readings(
     clerk_id: str,
@@ -49,6 +69,31 @@ async def get_user_readings(
     location: Optional[str] = None,
     token: HTTPAuthorizationCredentials = Depends(security)
 ) -> JSONResponse:
+    """
+    Retrieve user readings.
+
+    Retrieve a users readings based on various optional filters such as date range, emotion, and location. Token is verified before fetching the readings from the database.
+
+    Args:
+        clerk_id (str): User ID whose readings are to be retrieved.
+        start_date (Optional[str], optional): The start date for filtering readings. Defaults to None.
+        end_date (Optional[str], optional): The end date for filtering readings. Defaults to None.
+        emotion (Optional[str], optional): The emotion to filter readings by. Defaults to None.
+        location (Optional[str], optional): The location to filter readings by. Defaults to None.
+        token (HTTPAuthorizationCredentials): The authorisation token provided by the user.
+
+    Returns:
+        JSONResponse: A JSON response containing the filtered readings ordered by time (desc), or an error message.
+
+    Raises:
+        HTTPException: Invalid query parameters.
+        Exception: For any other unexpected errors.
+
+    Responses:
+        200: Readings retrieved successfully.
+        401: Unauthorised - Invalid token.
+        500: Internal Server Error - Error retrieving readings.
+    """
     try:
         verification = verify_token(token.credentials)
         if (verification["valid"] == False):
@@ -68,10 +113,33 @@ async def get_user_readings(
 @router.get('/readings/emotion-counts')
 async def get_emotion_counts(
     clerk_id: str,
-    timeframe: str, # 7(d), 30(d), 52(start of year)
+    timeframe: str,
     emotions: List[str] = Query(None),
     token: HTTPAuthorizationCredentials = Depends(security)
 ) -> JSONResponse:
+    """
+    Retrieve emotion counts over time. Used in line chart.
+
+    Retrieve emotion count data over a specified timeframe. Token is verified before fetching the emotion counts from the database.
+
+    Args:
+        clerk_id (str): User ID whose readings are to be retrieved.
+        timeframe (str): The timeframe for which the emotion counts are to be retrieved. Possible values are '7d', '30d', and '52w'.
+        emotions (List[str], optional): A list of emotions to filter the counts by. Defaults to None.
+        token (HTTPAuthorizationCredentials): The authorisation token provided by the user.
+
+    Returns:
+        JSONResponse: A JSON response containing the formatted emotion counts, or an error message.
+
+    Raises:
+        HTTPException: If invalid query parameters are provided.
+        Exception: For any other unexpected errors.
+
+    Responses:
+        200: Emotion counts retrieved successfully.
+        401: Unauthorised - Invalid token.
+        500: Internal Server Error - Error retrieving emotion counts.
+    """
     try:
         verification = verify_token(token.credentials)
         if not verification["valid"]:

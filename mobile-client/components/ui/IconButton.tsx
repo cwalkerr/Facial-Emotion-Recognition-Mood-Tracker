@@ -32,7 +32,6 @@ const IconButton = ({
 }: IconButtonProps): React.JSX.Element => {
   // defining defaults here and leaving btnStyles and iconStyles to add to them
   // adding to those props in other screens would overwrite the defaults if specified in the parameters above
-  // using the spread operator to combine the defaults with the passed styles doesnt work in JSX
   const defaultBtnStyles =
     'rounded-full p-2 w-14 h-14 bg-custom-primary active:bg-custom-base';
   const defaultIconStyles = 'w-7 h-7';

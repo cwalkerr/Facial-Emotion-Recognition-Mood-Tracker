@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime
 from services.celery.celery_config import celery_app
-from services.helpers.notification_schedule_helpers import iso_time_to_datetime_with_todays_date, get_random_notification_times
+from services.celery.notification_schedule_helpers import iso_time_to_datetime_with_todays_date, get_random_notification_times
 
 load_dotenv()
 

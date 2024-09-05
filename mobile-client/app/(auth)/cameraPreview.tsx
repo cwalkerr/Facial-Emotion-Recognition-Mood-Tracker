@@ -13,6 +13,53 @@ import { PredictionResponse, uploadPhoto } from '@/services/api/uploadPhoto';
 import { useAuth } from '@clerk/clerk-expo';
 import { ErrorResponse } from '@/services/api/customFetch';
 
+const getClosestSize = (
+  sizes: string[],
+  desiredWidth: number,
+  desiredHeight: number
+): string => {
+  let closestSize: string = '';
+  let closestDifference: number = Infinity;
+
+  for (const size of sizes) {
+    const [width, height] = size.split('x').map(Number); // "1280x720" -> [1280, 720]
+    const difference =
+      Math.abs(width - desiredWidth) + Math.abs(height - desiredHeight);
+
+    // find the size with the smallest difference to 1280x720
+    if (difference < closestDifference) {
+      closestDifference = difference;
+      closestSize = size;
+    }
+  }
+  return closestSize;
+};
+
+const getPictureSizes = async (
+  cameraRef: React.RefObject<CameraView>,
+  setPictureSize: React.Dispatch<React.SetStateAction<string | undefined>>
+): Promise<void> => {
+  let chosenSize: string = '';
+
+  if (cameraRef.current) {
+    const sizes = await cameraRef.current.getAvailablePictureSizesAsync();
+
+    if (!sizes) return; // not sure if this would ever happen, but would prevent pictureSize from empty string
+
+    for (const size of sizes) {
+      if (size === '1280x720' || size === '640x480') {
+        // take either of these if available, first prefered, array starts with largest size - 640x480 not tested so may not be great
+        chosenSize = size;
+        break;
+      }
+    }
+    if (!chosenSize) {
+      chosenSize = getClosestSize(sizes, 1280, 720); // if neither of the above are available, get the closest size
+    }
+  }
+  setPictureSize(chosenSize);
+};
+
 /**
  * Camera Component
  * used to display the camera preview, take photos and handle permissions
@@ -37,59 +84,6 @@ export default function Camera(): React.JSX.Element {
   useEffect(() => {
     handlePermissions();
   }, [permission, handlePermissions]);
-
-  // get available picture sizes when camera is ready, set the closest size to 1280x720
-  // reduces the size of the image for b64 encoding and haarcascades for face detection, while retaining quality
-  // the sizes are returned by expo-camera in landscape, but are oriented as portrait after taking picture regardless
-  useEffect(() => {
-    const getPictureSizes = async (): Promise<void> => {
-      let chosenSize: string = '';
-
-      if (cameraRef.current) {
-        const sizes = await cameraRef.current.getAvailablePictureSizesAsync();
-
-        if (!sizes) return; // not sure if this would ever happen, but would prevent pictureSize from empty string
-
-        for (const size of sizes) {
-          if (size === '1280x720' || size === '640x480') {
-            // take either of these if available, first prefered, array starts with largest size - 640x480 not tested so may not be great
-            chosenSize = size;
-            break;
-          }
-        }
-        if (!chosenSize) {
-          chosenSize = getClosestSize(sizes, 1280, 720); // if neither of the above are available, get the closest size
-        }
-      }
-      setPictureSize(chosenSize);
-    };
-    if (cameraRef.current && isCameraReady) {
-      getPictureSizes();
-    }
-
-    // move this to seperate file? it is part of the useEffect though?
-    const getClosestSize = (
-      sizes: string[],
-      desiredWidth: number,
-      desiredHeight: number
-    ): string => {
-      let closestSize: string = '';
-      let closestDifference: number = Infinity;
-
-      for (const size of sizes) {
-        const [width, height] = size.split('x').map(Number); // "1280x720" -> [1280, 720]
-        const difference =
-          Math.abs(width - desiredWidth) + Math.abs(height - desiredHeight);
-
-        // find the size with the smallest difference to 1280x720
-        if (difference < closestDifference) {
-          closestDifference = difference;
-          closestSize = size;
-        }
-      }
-      return closestSize;
-    };
-  }, [isCameraReady, setPictureSize]);
 
   // permissions still loading after request, return loading spinner
   if (!permission) {
@@ -150,7 +144,7 @@ export default function Camera(): React.JSX.Element {
           }
         } else {
           // navigate to results page with the emotion as a parameter
-          router.push(`/results?emotion=${response.prediction}` as Href);
+          router.replace(`/results?emotion=${response.prediction}` as Href);
         }
       } catch (error) {
         console.error('Error taking photo:', error);
@@ -161,17 +155,15 @@ export default function Camera(): React.JSX.Element {
     }
   };
 
-  const onCameraReady = () => {
+  const onCameraReady = async () => {
     setIsCameraReady(true);
+    await getPictureSizes(cameraRef, setPictureSize);
     setTimeout(() => {
       // enable the button after the camera is ready with delay, onCameraReady callback is called before the camera is actually ready
       // causing errors if photo is taken immediately
       setEnableButton(true);
-      // setting IsCameraReady(true) after the delay causes a stutter in the camera view, so adding button state is a workaround
-    }, 700); // not sure how well 700 works on all devices, but it works on the devices I have tested - dont want to make it longer than absolutely necessary
-    // switching to react-native-vision-camera may solve this as its more performant
+    }, 700);
   };
-
   return (
     <View className="flex-1 relative">
       <CameraView
@@ -185,7 +177,7 @@ export default function Camera(): React.JSX.Element {
       />
       <BlurView
         intensity={Platform.OS === 'ios' ? 80 : 100}
-        experimentalBlurMethod="dimezisBlurView" // allows the blur to work on Android - in testing, its not as good as on iOS need to find a better solution
+        experimentalBlurMethod="dimezisBlurView" // allows the blur to work on Android
         className="absolute top-0 left-0 w-full h-full"
       />
       <Text className="text-xl text-semiboold text-white bg-transparent absolute top-10 right-12 mr-10 mt-4">
@@ -194,7 +186,7 @@ export default function Camera(): React.JSX.Element {
       <View className="absolute ml-14 mt-24 top-1/8 left-1/8 w-3/4 h-3/4 border-2 border-green-500 rounded-3xl bg-transparent" />
 
       {/* Back icon */}
-      <Link href="/" asChild className="absolute top-14 left-4">
+      <Link href="/" asChild replace className="absolute top-14 left-4">
         <Pressable>
           <ArrowLeft color={'white'} size={36} />
         </Pressable>

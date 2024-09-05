@@ -2,44 +2,23 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { Card } from '@/components/ui/gluestack-imports/card';
-import getEmoji from '../helpers/getEmoji';
-import { Colors } from '@/constants/Colors';
-import { Sizes } from '@/constants/Sizes';
+import { Bars } from '@/components/helpers/formatBarChartData';
 import { Menu } from 'lucide-react-native';
 import { ReadingsResponse } from '@/services/api/fetchUserData';
 import ChartFilterActionSheet from './BarChartFilterActionSheet';
 import formatFilterDescription from '@/services/formatFilterDescription';
 import { Location } from '@/constants/Locations';
 
-interface EmotionBarChartProps {
+export interface EmotionBarChartProps {
   counts: ReadingsResponse['counts'];
 }
-
-const Bars = ({ counts }: EmotionBarChartProps) => {
-  const emotions = Object.keys(counts);
-  // map over keys of counts to access the values and create the bars labels, colours and values
-  const bars = emotions.map(emotion => {
-    const frontColor = Colors[emotion.toUpperCase()];
-    return {
-      value: counts[emotion],
-      labelComponent: () =>
-        getEmoji({
-          emotion: emotion,
-          height: Sizes.BAR_CHART_LABEL_SIZE,
-          width: Sizes.BAR_CHART_LABEL_SIZE,
-        }),
-      frontColor: frontColor,
-    };
-  });
-  return bars;
-};
 
 export default function EmotionBarChart({
   counts,
 }: EmotionBarChartProps): React.JSX.Element {
   const [showActionsheet, setShowActionsheet] = useState<boolean>(false);
   const [filteredData, setFilteredData] = useState<ReadingsResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [filterDescription, setFilterDescription] = useState<string>('This Week');
 
   // fetch the filtered data from the action sheet, format the description and set the data in state
@@ -47,19 +26,17 @@ export default function EmotionBarChart({
     data: ReadingsResponse,
     filters: { timeframe: string; location?: Location }
   ) => {
+    setIsLoading(true);
     setFilteredData(data);
     setFilterDescription(
       formatFilterDescription(filters.timeframe, filters.location)
     );
+    setIsLoading(false);
   };
 
   // check the total count, if 0 display a message to take a reading
   let totalCount = 0;
   if (counts) {
-    // counts will always be 0 if there are no readings, wait incase actual data is loading
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
     for (const key in counts) {
       totalCount += counts[key];
     }

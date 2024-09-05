@@ -5,102 +5,17 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmotionCountsOverTime } from '@/services/api/fetchUserData';
-import { Colors } from '@/constants/Colors';
-import { formatShortDate } from '@/services/formatDateTime';
 import { Card } from './gluestack-imports/card';
 import getEmoji from '../helpers/getEmoji';
 import { Sizes } from '@/constants/Sizes';
 import { Menu } from 'lucide-react-native';
 import { CurveType } from 'gifted-charts-core';
 import LineChartFilters from './LineChartFilterActionSheet';
+import { ChartData, formatLineChartData } from '../helpers/formatLineChartData';
 
 interface EmotionLineChartProps {
   data: EmotionCountsOverTime;
 }
-
-// represents a single data set in the chart (arr of { value: number } objs) line, points, colours config refrencing LineChart props
-interface DataSetItem {
-  data: { value: number }[];
-  startFillColor: string;
-  color: string;
-  thickness: number;
-  dataPointColor: string;
-  endFillColor: string;
-  key: string;
-}
-
-// represents the data that the chart needs to render arr of data sets, labels('dd/MM') , max y axis value etc
-interface ChartData {
-  dataSet: DataSetItem[];
-  xAxisLabels: string[];
-  maxValue: number;
-  noOfSections: number;
-  stepValue: number;
-}
-
-// process the data from the api into the format needed for the chart
-const processChartData = (data: EmotionCountsOverTime): ChartData => {
-  if (!data) throw new Error('Data is requrired to process chart data');
-
-  // create the data sets for each emotion present
-  const newDataSet: DataSetItem[] = Object.keys(data).map(emotion => ({
-    // iterate over date: count array for each emotion included and create value: count obj for each date
-    data: data[emotion].map(arrItem => ({ value: arrItem.count })),
-    // styling for the line and points
-    startFillColor: Colors[emotion.toUpperCase()],
-    color: Colors[emotion.toUpperCase()],
-    thickness: 6,
-    dataPointColor: Colors[emotion.toUpperCase()],
-    endFillColor: '#ffffff',
-    key: `${emotion}`,
-  }));
-  // create the x axis labels from the first data set dates (all data sets will have the same dates)
-  const newXAxisLabels =
-    data[Object.keys(data)[0]].map(arrItem => formatShortDate(arrItem.date)) || [];
-
-  // calculate the highest count in the data to set the max value of the chart
-  const highestCount = Object.keys(data).reduce(
-    (accumulator: number, emotion: string) => {
-      for (const item of data[emotion]) {
-        if (item.count > accumulator) {
-          accumulator = item.count;
-        }
-      }
-      return accumulator;
-    },
-    2
-  );
-  // if the highest count is less than 4, set the max value to 4, otherwise add 1 to the highest count - makes the chart look better
-  const adjustedHighestCount = highestCount < 4 ? 4 : highestCount + 1;
-  // calculate the number of sections and step value for the y axis
-  let numSections: number = 0;
-  switch (true) {
-    case adjustedHighestCount <= 10:
-      numSections = adjustedHighestCount;
-      break;
-    case adjustedHighestCount <= 20:
-      numSections = 10;
-      break;
-    case adjustedHighestCount <= 40:
-      numSections = 12;
-      break;
-    case adjustedHighestCount <= 50:
-      numSections = 15;
-      break;
-    default:
-      numSections = adjustedHighestCount / 5;
-      break;
-  }
-  const step = adjustedHighestCount / numSections;
-
-  return {
-    dataSet: newDataSet,
-    xAxisLabels: newXAxisLabels,
-    maxValue: adjustedHighestCount,
-    noOfSections: numSections,
-    stepValue: step,
-  };
-};
 
 export default function EmotionLineChart({
   data,
@@ -111,6 +26,7 @@ export default function EmotionLineChart({
   );
   const [showActionsheet, setShowActionsheet] = useState<boolean>(false);
   const [timeframeLabel, setTimeframeLabel] = useState<string>('Past 30 Days');
+
   // set the chart dimensions based on the screen size
   const { width, height } = Dimensions.get('window');
   const headerHeight: number = useHeaderHeight();
@@ -120,16 +36,17 @@ export default function EmotionLineChart({
     (height - headerHeight * 2 - tabBarHeight * 2 - insets.top - insets.bottom) /
     1.15; //
   const chartWidth: number = width / 1.3;
+
   // process initial data - if no filteredData default of happy/sad on weekly timeframe
   const initialChartData: EmotionCountsOverTime = filteredData || data;
-  const initialProcessedData = processChartData(initialChartData);
+  const initialProcessedData = formatLineChartData(initialChartData);
   const [chartData, setChartData] = useState<ChartData>(initialProcessedData);
 
   const activeEmotions: string[] = Object.keys(filteredData || data); // send to LineChartFilters to display emotions already selected
   // update chart data when new filters are selected - called after handleFetchFilteredData
   useEffect(() => {
     if (filteredData) {
-      const updatedChartData = processChartData(filteredData);
+      const updatedChartData = formatLineChartData(filteredData);
       setChartData(updatedChartData);
       setIsLoading(false);
     }

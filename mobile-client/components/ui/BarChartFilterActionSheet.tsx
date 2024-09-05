@@ -35,7 +35,6 @@ import {
   ReadingsResponse,
 } from '@/services/api/fetchUserData';
 import { ErrorResponse } from '@/services/api/customFetch';
-import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
 
 interface ChartFilterActionSheetProps {
   showActionsheet: boolean;
@@ -88,7 +87,7 @@ export default function ChartFilterActionSheet({
   ): Promise<void> => {
     const token = await getToken();
 
-    if (!checkForNullOrUndefined({ userId, token })) {
+    if (!userId || !token) {
       return;
     }
     const filters: Partial<UserDataFilters> = {};
@@ -104,7 +103,7 @@ export default function ChartFilterActionSheet({
         return;
       }
       if ('readings' in response) {
-        onFetchFilteredData(response, { timeframe, location });
+        onFetchFilteredData(response, { timeframe, location }); // send the filtered data to the parent component
         return;
       }
       throw new Error(

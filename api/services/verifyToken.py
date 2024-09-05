@@ -11,8 +11,8 @@ ALGORITHM = os.getenv("ALGORITHM")
 # handles token verification, no payload is required only checks if the token is valid
 def verify_token(token: str) -> dict:
     try:
-        # leeway is set to 10 seconds, common bug was recieving ImmatureSignatureError, likely clock skew
-        jwt.decode(token, JWT_PUBLIC_KEY, algorithms=[ALGORITHM], options={'leeway': 10})
+        # leeway is set, common bug was recieving ImmatureSignatureError, likely clock skew
+        jwt.decode(token, JWT_PUBLIC_KEY, algorithms=[ALGORITHM], options={'leeway': 20})
         return {"valid": True}
     except ExpiredSignatureError:
         return {'valid': False, 'message': 'Unauthorised: Token expired'}

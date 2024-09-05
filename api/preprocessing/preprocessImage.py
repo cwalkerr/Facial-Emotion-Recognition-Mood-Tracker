@@ -11,8 +11,9 @@ class PreprocessingError(Exception):
         
 generic_user_message = "An error occurred while processing the image. Please try again."
 
-## Preprocess the image by greyscaling, detecting face, cropping to bounding box, and resizing
+# Preprocess the image by greyscaling, detecting face, cropping to bounding box, and resizing
 # Note: do not normalise the pixel values as the first stage of the model does this
+
 def b64_to_numpy(base_64_image: str) -> np.ndarray:
     try:
         # decode the base64 image
@@ -25,7 +26,7 @@ def b64_to_numpy(base_64_image: str) -> np.ndarray:
         if cv2_image is None:
             raise PreprocessingError(generic_user_message, "Error in decoding base64 image: cv2 image is None")
 
-        return cv2_image # cv2 image is still a numpy array
+        return cv2_image
     except Exception as e:
         raise PreprocessingError(generic_user_message, f"Error in decoding base64 image: {e}")
 
@@ -89,7 +90,7 @@ def resize(image: np.ndarray) -> np.ndarray:
         return cv2.resize(image, (48, 48), interpolation=cv2.INTER_AREA)
     except Exception as e:
         print("Error in resizing image:", e)
-        raise
+        raise PreprocessingError(generic_user_message, f"Error in resizing image: {e}")
     
 # preprocessing pipeline
 def preprocess(base64_image: str) -> np.ndarray:
@@ -100,7 +101,6 @@ def preprocess(base64_image: str) -> np.ndarray:
         resized_image = resize(cropped_face)
         # add the channel dimension to match the model input shape
         preprocessed_image = np.expand_dims(resized_image, axis=-1)
-
         return preprocessed_image
     except PreprocessingError as e:
         raise e

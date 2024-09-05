@@ -1,5 +1,6 @@
 import { customFetch } from './customFetch';
 
+// Add a user with notification configuartion to the database, starts the scheduled notifications on the server.
 export const addUser = async (
   clerkId: string,
   token: string,

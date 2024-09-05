@@ -27,8 +27,7 @@ import Animated, {
 import EmojiCarousel from '@/components/ui/EmojiCarousel';
 import { useAuth } from '@clerk/clerk-expo';
 import { uploadReading, ReadingData } from '@/services/api/uploadReading';
-import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
-import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
+import { useUserDataContext } from '@/contexts/RefreshDataContext';
 
 export default function Results(): React.JSX.Element {
   const { emotion: initialEmotion } = useLocalSearchParams<{ emotion: string }>();
@@ -39,7 +38,7 @@ export default function Results(): React.JSX.Element {
   const [note, setNote] = useState<string | null>(null);
   const [showCarousel, setShowCarousel] = useState<boolean>(false);
   const { getToken, userId } = useAuth();
-  const { setIsFromResults } = useRefreshDataContext();
+  const { userData, setUserData } = useUserDataContext();
 
   // shows the carousel that the user uses to select the correct emotion if the user selects that the emotion is not accurate
   useEffect(() => {
@@ -65,21 +64,14 @@ export default function Results(): React.JSX.Element {
   const sendReading = useCallback(async (): Promise<void> => {
     const token = await getToken();
     const timestamp = new Date().toISOString();
-
-    if (
-      !checkForNullOrUndefined({
-        userId,
-        isAccurate,
-        token,
-      })
-    ) {
+    if (!token || !userId) {
       return;
     }
     const readingData: ReadingData = {
       emotion,
-      is_accurate: isAccurate!, // non null assertion is fine here because of the check above
+      is_accurate: isAccurate as boolean, // user cannot continue without selecting accurate or not
       timestamp,
-      clerk_id: userId!,
+      clerk_id: userId,
     };
     // only add optional values if they are not null
     if (location !== null) readingData.location = location;
@@ -92,7 +84,19 @@ export default function Results(): React.JSX.Element {
         Alert.alert('Error', response.error);
         return;
       }
-      setIsFromResults(true); // tell tabs layout to refresh user data with new reading
+
+      // upddate the state with the new reading at the beginning of the array as it will be the most recent
+      const newReading = response;
+      const updatedReadings = [newReading, ...userData!.readings];
+      const updatedCounts = {
+        ...userData!.counts,
+        [newReading.emotion]: userData!.counts[newReading.emotion] + 1,
+      };
+
+      setUserData({
+        readings: updatedReadings,
+        counts: updatedCounts,
+      });
       // redirect home screen, replace to unmount camera
       router.replace(`/` as Href);
     } catch (error) {

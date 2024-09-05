@@ -29,15 +29,11 @@ const AuthConditionalRender = () => {
     if (isSignedIn && !path.includes('/notificationConfig')) {
       router.replace('(auth)' as Href);
     } else {
-      // this should work wihtout the /login, (public)/_layout.tsx should deal with routing to its first screen,
-      // but get unmatched route error without it
       router.replace('(public)/login' as Href);
     }
   }, [isSignedIn]);
-  // Return Slot to ensure rendering root layout before redirecting - error without it
+  // Return Slot to ensure rendering root layout before redirecting
   return <Slot />;
-  // bit of a hack as this renders home page first if not signed in, then redirects to signup - though its not noticeable user side
-  // home content is blocked by wrapping in <SignedIn> from Clerk, so it's not a critical issue
 };
 
 export default function RootLayout() {

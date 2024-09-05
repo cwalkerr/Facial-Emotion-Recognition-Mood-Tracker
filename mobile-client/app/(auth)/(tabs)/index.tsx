@@ -1,12 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, ActivityIndicator, Text, FlatList } from 'react-native';
 import { Card } from '@/components/ui/gluestack-imports/card';
 import getEmoji from '@/components/helpers/getEmoji';
-import { useRefreshDataContext } from '@/contexts/RefreshDataContext';
+import { useUserDataContext } from '@/contexts/RefreshDataContext';
 import { formatTime } from '@/services/formatDateTime';
-import { ReadingsResponse, EmotionReading } from '@/services/api/fetchUserData';
 import EmotionBarChart from '@/components/ui/EmotionBarChart';
-import { format } from 'date-fns';
 
 // list of support messages to display as placeholders for reading cards
 const supportMessages: string[] = [
@@ -15,38 +13,29 @@ const supportMessages: string[] = [
   '“Life can only be understood backwards; but it must be lived forwards.” — Søren Kierkegaard',
   '"Each day provides its own gifts - Marcus Aurelius"',
   'Small progress is still progress. Celebrate every little win!',
-  '“You have power over your mind — not outside events. Realize this, and you will find strength.” — Marcus Aurelius',
   '"The journey of a thousand miles begins with a single step.” — Lao Tzu',
   'Don’t forget to take a moment to appreciate how far you’ve come.',
 ];
-// get todays readings from the weekly readings stored in the user data context
-const getTodaysReadings = (userDataResponse: ReadingsResponse): EmotionReading[] => {
-  const today = format(new Date(), 'yyyy-MM-dd');
-  // filter weekly readings to create new array with only todays readings
-  const todaysReadings: EmotionReading[] = userDataResponse.readings.filter(
-    reading => reading.datetime.startsWith(today)
-  );
-  return todaysReadings;
-};
 
 export default function Home() {
-  const { userData } = useRefreshDataContext();
+  const { userData, todaysReadings } = useUserDataContext();
 
-  // load todays readings
-  let todaysReadings: EmotionReading[] = [];
-  if (userData) todaysReadings = getTodaysReadings(userData);
+  const displayedCards = useMemo(() => {
+    const cards = [...todaysReadings];
 
-  const displayedCards = [...todaysReadings];
-  // if there are less than 3 readings, add placeholders - keeps the layout in place
-  const noOfPlaceholders = Math.max(0, 3 - todaysReadings.length);
-  for (let i = 0; i < noOfPlaceholders; i++) {
-    displayedCards.push({
-      id: -1,
-      emotion: 'null',
-      datetime: 'null',
-      note: 'Wait for the first notification or start today off by taking a photo!',
-    });
-  }
+    const noOfPlaceholders = Math.max(0, 3 - todaysReadings.length);
+
+    for (let i = 0; i < noOfPlaceholders; i++) {
+      cards.push({
+        id: -1,
+        emotion: 'null',
+        datetime: 'null',
+        note: 'Wait for the first notification or start today off by taking a photo!',
+      });
+    }
+
+    return cards;
+  }, [todaysReadings]);
 
   return (
     <View className="flex-1 justify-start items-center p-4 mt-4">
@@ -60,7 +49,7 @@ export default function Home() {
           data={displayedCards}
           renderItem={({ item: reading, index }) => {
             let placeholderMessage: string = '....';
-            // check if the reading is a placeholder, -1 is the placeholder id
+            // check if the reading is a placeholder
             if (reading.id === -1) {
               // if the first card is a placeholder, display the placeholder note
               if (index === 0) {
@@ -111,12 +100,11 @@ export default function Home() {
             reading.id === -1 ? `placeholder-${index}` : reading.id.toString()
           }
           scrollEnabled={displayedCards.length > 3} // scroll if more than 3 cards
-          style={{ height: 3 * 92 }} //  the height of 3 cards - from the devices i have tested on these all work at the fixed height - should cover most devices, very small devices may have a slight overflow with CameraFAB
+          style={{ height: 3 * 92 }} //  the height of 3 cards - cover most devices, very small devices may have a slight overflow with CameraFAB
           showsVerticalScrollIndicator={false}
         />
       )}
       <View className="justify-end p-2">
-        {/* still want to display the empty chart if no data... bit of a dodgy workaround for ts error*/}
         <EmotionBarChart
           counts={
             userData?.counts || {

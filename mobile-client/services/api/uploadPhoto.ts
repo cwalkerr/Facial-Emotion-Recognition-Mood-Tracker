@@ -1,11 +1,5 @@
 /**
- * POST request to upload a photo to the server
- * This function currently sends the base64 encoded image to the server.
- * This is not the most efficient way to send images, using FormData with a Blob is better.
- * however, this causes an error seeminly relating to the way FastAPI handles file uploads.
- * This is a common issue from what I've read when using React Native - though i cant understand why it would be an issue.
- * ive tried wrappiing the blob in a File object as well as using XMLHttpRequest,
- * Axios and Fetch, and omitting/including headers and different form data configurations.
+ * POST request to upload a photo to the server returning a prediction of the emotion in the photo
  */
 
 import { customFetch, ErrorResponse } from './customFetch';

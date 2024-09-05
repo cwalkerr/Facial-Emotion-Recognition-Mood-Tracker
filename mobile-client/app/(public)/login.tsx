@@ -15,7 +15,6 @@ import { Image } from 'expo-image';
 export default function Login(): React.JSX.Element {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [emailAddress, setEmail] = useState<string>('');
-  // see comments in /signup.tsx for more info on isLoading
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
 
@@ -28,6 +27,7 @@ export default function Login(): React.JSX.Element {
         password,
       });
       if (signInAttempt.status === 'complete') {
+        // If the sign-in attempt successful, set the active session and navigate to the authenticated routes
         await setActive({ session: signInAttempt.createdSessionId });
         router.replace('(auth)' as Href);
       }

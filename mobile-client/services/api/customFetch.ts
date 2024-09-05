@@ -3,7 +3,7 @@ export interface ErrorResponse {
   status?: number;
 }
 
-// custom fetch function that retries on 401 errors, abd formats response as ErrorResponse if not OK
+// custom fetch function that retries on 401 errors
 export const customFetch = async <T>(
   url: string,
   options: RequestInit,
@@ -17,7 +17,7 @@ export const customFetch = async <T>(
     }
     if (response.status === 401 && retries > 0) {
       // retry if 401, likely due to immature signature, but could be other reasons
-      // 401's are often resolved by retrying the request
+      // 401 issues noticed are always resolved by retrying the request
       await new Promise(resolve => setTimeout(resolve, delay));
       return customFetch<T>(url, options, retries - 1, delay);
     }

@@ -3,9 +3,9 @@ from typing import Dict, List, Optional
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 from db.models import Emotion, Location, Reading, GlobalAccuracyCount
-from services.emotion_enum import Emotions
+from constants.emotion_enum import Emotions
 
-# apply filters to the query based on the provided parameters
+# apply filters to the reading data queries based on the provided parameters
 def apply_filters(query, clerk_id, start_date=None, end_date=None, emotion=None, location=None):
     query = query.where(Reading.clerk_id == clerk_id)
     
@@ -60,6 +60,7 @@ async def insert_reading(session: Session, request):
     )
     session.add(new_reading)
 
+    # update the global accuracy count based on users response
     global_accuracy_count = await session.get(GlobalAccuracyCount, 1)
     if request.is_accurate:
         global_accuracy_count.accurate_readings += 1
@@ -67,12 +68,10 @@ async def insert_reading(session: Session, request):
         global_accuracy_count.failed_readings += 1
 
     await session.commit()
-    return {"message": "Reading added successfully"}, 200
-
-# Get the user's readings, can add optional filters for timeframe, emotion and location
-async def select_user_readings(session: Session, clerk_id: str, start_date: Optional[str], end_date: Optional[str], emotion: Optional[str], location: Optional[str]):
-    query = (
-        select( # leaving out clerk_id, location_id, emotion_id
+    
+    # get the recently added reading to return in the response
+    recently_added_reading = (
+        select(
             Reading.reading_id,
             Emotion.label,
             Location.name,
@@ -80,16 +79,43 @@ async def select_user_readings(session: Session, clerk_id: str, start_date: Opti
             Reading.note,
         )
         .join(Emotion)
-        .outerjoin(Location) # ensure readings are present even if no location was added
+        .outerjoin(Location)
+        .where(Reading.reading_id == new_reading.reading_id)
+    )
+
+    result = await session.execute(recently_added_reading)
+    row = result.fetchone()
+
+    # return the formatted new reading
+    return {
+            "id": row.reading_id,
+            "emotion": row.label,
+            "location": row.name,
+            "datetime": row.datetime.strftime('%Y-%m-%dT%H:%M'),
+            "note": row.note,
+        }, 201
+
+# Get the user's readings, can add optional filters for timeframe, emotion and location
+async def select_user_readings(session: Session, clerk_id: str, start_date: Optional[str], end_date: Optional[str], emotion: Optional[str], location: Optional[str]):
+    query = (
+        select(
+            Reading.reading_id,
+            Emotion.label,
+            Location.name,
+            Reading.datetime,
+            Reading.note,
+        )
+        .join(Emotion)
+        .outerjoin(Location)
         .where(Reading.clerk_id == clerk_id)
         .order_by(desc(Reading.datetime))
     )
     # if filters are provided, apply them
     query = apply_filters(query, clerk_id, start_date, end_date, emotion, location)
     result = await session.execute(query)
+    
      # format the data, label/name -> emotion/location
-    # also format the date to iso compliant string
-    # if no location or note present, key still included just null value, keeps the json consistent
+    # if no location or note present, key still included just null value
     formatted_readings = [
         {
             "id": row.reading_id,
@@ -138,7 +164,7 @@ async def select_emotion_counts_over_time(
         # subtract 7 days from now to get the start date
         start_date = now - timedelta(days=7) 
         trunc_value = 'day'
-        increment = timedelta(days=1) # provides a daily increment compatible with datetimes to use in the while loop below
+        increment = timedelta(days=1) # provides a daily increment
     elif timeframe == '30d': # past 30 days
         start_date = now - timedelta (days=30) 
         trunc_value = 'day'

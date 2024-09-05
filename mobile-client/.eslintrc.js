@@ -1,5 +1,11 @@
 // eslint-disable-next-line no-undef
 module.exports = {
+  overrides: [
+    {
+      files: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
+      extends: ['plugin:testing-library/react'],
+    },
+  ],
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',

@@ -9,8 +9,8 @@ module.exports = function (api) {
         },
       ],
       'nativewind/babel',
+      '@babel/preset-typescript',
     ],
-
     plugins: [
       [
         'module-resolver',

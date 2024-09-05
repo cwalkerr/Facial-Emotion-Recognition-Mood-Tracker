@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "938566628980",
+    "project_id": "moodmirror-27be3",
+    "storage_bucket": "moodmirror-27be3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:938566628980:android:820f303345a86d4c78c321",
+        "android_client_info": {
+          "package_name": "com.toombah.moodmirror"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiFoaMbBLAmo_EbSH95lbnukWpPyE61bc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

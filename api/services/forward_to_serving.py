@@ -3,7 +3,7 @@ import requests
 import os
 import numpy as np
 from dotenv import load_dotenv
-from services.emotion_enum import Emotions
+from constants.emotion_enum import Emotions
 
 load_dotenv()
  

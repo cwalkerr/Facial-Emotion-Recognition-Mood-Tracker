@@ -35,7 +35,6 @@ import {
 } from './gluestack-imports/select';
 import { useAuth } from '@clerk/clerk-expo';
 import { ActivityIndicator, Alert } from 'react-native';
-import { checkForNullOrUndefined } from '@/services/errors/checkForNullOrUndefined';
 import { ErrorResponse } from '@/services/api/customFetch';
 
 interface LineChartFilterProps {
@@ -85,11 +84,11 @@ export default function LineChartFilters({
     try {
       const token = await getToken();
 
-      if (!checkForNullOrUndefined({ userId, token })) {
+      if (!userId || !token) {
         return;
       }
       const response: EmotionCountsOverTime | ErrorResponse =
-        await fetchCountsOverTime(userId!, token!, timeframe, selectedEmotions);
+        await fetchCountsOverTime(userId, token, timeframe, selectedEmotions);
 
       if ('error' in response) {
         if (typeof response.error === 'string') {

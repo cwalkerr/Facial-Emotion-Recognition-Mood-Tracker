@@ -1,0 +1,18 @@
+{
+  "cli": {
+    "version": ">= 11.0.3"
+  },
+  "build": {
+    "apk_app": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {}
+  }
+}

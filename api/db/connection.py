@@ -25,7 +25,7 @@ engine = create_async_engine(f"postgresql+psycopg://{username}:{password}@{host}
 Session = sessionmaker(
     bind=engine,
     class_=AsyncSession,
-    expire_on_commit=True # not sure
+    expire_on_commit=False
 )
 # run file to test connection
 async def test_connection():

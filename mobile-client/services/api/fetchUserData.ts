@@ -68,6 +68,7 @@ export const fetchReadings = async (
   }
 };
 
+// fetches the emotion counts over a specified time frame used for the line chart
 export const fetchCountsOverTime = async (
   clerk_id: string,
   token: string,

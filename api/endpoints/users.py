@@ -10,14 +10,36 @@ from services.celery.tasks import start_user_notification_scheduler
 router = APIRouter()    
 security = HTTPBearer()
 
-class Users(BaseModel):
+class User(BaseModel):
     id: str
     start_time: str
     end_time: str
     
 # adds the users clerk id to the database
 @router.post("/users")
-async def add_user(request: Users, token: HTTPAuthorizationCredentials = Depends(security)) -> Response:
+async def add_user(request: User, token: HTTPAuthorizationCredentials = Depends(security)) -> Response:
+    """
+    Add a new user.
+
+    Adds a user after token generated on signup. Token is verified before the user is added. 
+    Additionally, the user's notification scheduler is started after the user is added.
+
+    Args:
+        request (Users): The user data to be added.
+        token (HTTPAuthorizationCredentials): The authorisation token provided by the user.
+
+    Returns:
+        Response: A JSON response with a success message or an error message.
+
+    Raises:
+        HTTPException: If invalid data is provided in the request.
+        Exception: For any other unexpected errors.
+
+    Responses:
+        201: User added successfully.
+        401: Unauthorised - Invalid token.
+        500: Internal Server Error - Error adding user.
+    """
     try:
         verification = verify_token(token.credentials)
         if (verification["valid"] == False): # check if token is invalid

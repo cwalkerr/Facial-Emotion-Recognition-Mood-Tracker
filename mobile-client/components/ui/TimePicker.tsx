@@ -13,6 +13,7 @@ interface TimePickerProps {
   setEndTime: React.Dispatch<React.SetStateAction<Date>>;
 }
 
+// TimePicker component - allows user to select start and end time for notifications
 export const TimePicker = ({
   startTime,
   setStartTime,
@@ -26,6 +27,9 @@ export const TimePicker = ({
     selectedTime: Date | undefined
   ) => {
     if (selectedTime === undefined) {
+      return;
+    }
+    if (endTime < selectedTime) {
       return;
     }
     const newStartTime = toZonedTime(selectedTime, timeZone);

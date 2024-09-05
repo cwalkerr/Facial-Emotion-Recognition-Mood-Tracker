@@ -16,6 +16,8 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
+      "package": "com.toombah.moodmirror",
       "adaptiveIcon": {
         "foregroundImage": "",
         "backgroundColor": "#ffffff"

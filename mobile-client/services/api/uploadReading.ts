@@ -1,4 +1,5 @@
 import { customFetch, ErrorResponse } from './customFetch';
+import { EmotionReading } from './fetchUserData';
 
 export interface ReadingData {
   emotion: string;
@@ -9,17 +10,13 @@ export interface ReadingData {
   clerk_id: string;
 }
 
-interface UploadReadingResponse {
-  message: string;
-}
-
 // uploads the reading data to the server
 export const uploadReading = async (
   readingData: ReadingData,
   token: string
-): Promise<UploadReadingResponse | ErrorResponse> => {
+): Promise<EmotionReading | ErrorResponse> => {
   try {
-    const response = await customFetch<UploadReadingResponse | ErrorResponse>(
+    const response = await customFetch<EmotionReading | ErrorResponse>(
       process.env.EXPO_PUBLIC_API_DEV_URL + '/readings',
       {
         method: 'POST',
@@ -33,7 +30,7 @@ export const uploadReading = async (
     if ('error' in response) {
       return response as ErrorResponse;
     }
-    return response as UploadReadingResponse;
+    return response as EmotionReading;
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
