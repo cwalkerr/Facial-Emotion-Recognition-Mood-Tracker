@@ -6,7 +6,7 @@ import CameraFAB from '@/components/ui/CameraFab';
 import { View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { Button, ButtonText } from '@/components/ui/gluestack-imports/button';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { PredictionResponse, uploadPhoto } from '@/services/api/uploadPhoto';
@@ -34,7 +34,7 @@ const getClosestSize = (
   }
   return closestSize;
 };
-
+// get the picture sizes available on the device and find 1280x720 or 640x480 or the closest size to 1280x720
 const getPictureSizes = async (
   cameraRef: React.RefObject<CameraView>,
   setPictureSize: React.Dispatch<React.SetStateAction<string | undefined>>
@@ -72,18 +72,17 @@ export default function Camera(): React.JSX.Element {
   const cameraRef = useRef<CameraView>(null);
   const { getToken } = useAuth();
 
-  // checks if permissions are granted on mount, and if not, requests them
-  const handlePermissions = useCallback(async (): Promise<void> => {
-    if (!permission) return; // permission object is not available yet - useEffect will call again when it is
-
-    if (!permission.granted && permission.canAskAgain) {
-      await requestPermission(); // this will opem the device specific permission screen
-    }
-  }, [permission, requestPermission]);
-
   useEffect(() => {
+    const handlePermissions = async (): Promise<void> => {
+      if (!permission) return; // permission object is not available yet - useEffect will call again when it is
+
+      if (!permission.granted && permission.canAskAgain) {
+        await requestPermission(); // this will open the device-specific permission screen
+      }
+    };
+
     handlePermissions();
-  }, [permission, handlePermissions]);
+  }, [permission, requestPermission]);
 
   // permissions still loading after request, return loading spinner
   if (!permission) {
@@ -106,7 +105,7 @@ export default function Camera(): React.JSX.Element {
           className="mt-4 rounded-md"
           onPress={() => {
             if (permission.canAskAgain) {
-              handlePermissions();
+              requestPermission();
             } else {
               Linking.openSettings();
             }

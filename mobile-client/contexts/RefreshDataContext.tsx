@@ -18,7 +18,8 @@ export const UserDataContext = createContext<UserDataContextProps | undefined>(
   undefined
 );
 
-// State provider component - wraps the authenticated routes, handles initial fetch of user data setting in state, uprdates todays readings when user data changes
+// State provider component - wraps the authenticated routes,
+// handles initial fetch of user data setting in state, updates todays readings when user data changes
 export const UserDataStateProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {

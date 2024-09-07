@@ -21,7 +21,7 @@ class ReadingData(BaseModel):
 @router.post("/readings")
 async def upload_reading( 
     request: ReadingData,
-    token: HTTPAuthorizationCredentials = Depends(security)
+    # token: HTTPAuthorizationCredentials = Depends(security)
 ) -> JSONResponse:
     """
     Upload a new reading.
@@ -46,9 +46,9 @@ async def upload_reading(
     """
     try :
         # verify token
-        verification = verify_token(token.credentials)
-        if (verification["valid"] == False):
-            return JSONResponse(content={"message": verification["message"]}, status_code=401)
+        # verification = verify_token(token.credentials)
+        # if (verification["valid"] == False):
+        #     return JSONResponse(content={"message": verification["message"]}, status_code=401)
         # save reading to db
         async with Session() as session:
             response, status_code = await insert_reading(session, request)
@@ -127,10 +127,10 @@ async def get_emotion_counts(
         timeframe (str): The timeframe for which the emotion counts are to be retrieved. Possible values are '7d', '30d', and '52w'.
         emotions (List[str], optional): A list of emotions to filter the counts by. Defaults to None.
         token (HTTPAuthorizationCredentials): The authorisation token provided by the user.
-
+        
     Returns:
         JSONResponse: A JSON response containing the formatted emotion counts, or an error message.
-
+                
     Raises:
         HTTPException: If invalid query parameters are provided.
         Exception: For any other unexpected errors.

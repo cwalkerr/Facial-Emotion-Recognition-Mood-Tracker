@@ -45,7 +45,7 @@ def schedule_notifications(clerk_id: str, start_datetime: datetime, end_datetime
         )
         print(f"Scheduled notification for {clerk_id} at {notification_time.strftime('%H:%M:%S')}")
 
-
+# schedules notifications for the user at random times during their time range, and schedules the task to run again the next day
 @celery_app.task(name='services.celery.tasks.daily_scheduler')
 def daily_scheduler(clerk_id: str, start_datetime: datetime, end_datetime: datetime):
     print(f"Executing daily_scheduler for {clerk_id} with start_datetime={start_datetime} and end_datetime={end_datetime}")
@@ -65,6 +65,7 @@ def daily_scheduler(clerk_id: str, start_datetime: datetime, end_datetime: datet
     )
     print(f"Scheduled daily_scheduler for {clerk_id} at {tomorrow_start_time.strftime('%Y-%m-%d %H:%M')}")
     
+# format the date and start the user notification scheduler    
 def start_user_notification_scheduler(clerk_id: str, start_time: str, end_time: str):
     try:
         print(f"Starting user notification scheduler for {clerk_id} with start_time={start_time} and end_time={end_time}")
@@ -78,7 +79,7 @@ def start_user_notification_scheduler(clerk_id: str, start_time: str, end_time: 
         print(f"Failed to start user notification scheduler for {clerk_id}: {error}")        
         
 
-# test functions
+# test functions with worker
 
 def test_schedule_notifications():
     clerk_id = 'user_2lQF4rzaQnsst56zUbVxfTnHuth' # test user

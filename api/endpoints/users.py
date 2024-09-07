@@ -25,7 +25,7 @@ async def add_user(request: User, token: HTTPAuthorizationCredentials = Depends(
     Additionally, the user's notification scheduler is started after the user is added.
 
     Args:
-        request (Users): The user data to be added.
+        request (User): The user data to be added.
         token (HTTPAuthorizationCredentials): The authorisation token provided by the user.
 
     Returns:

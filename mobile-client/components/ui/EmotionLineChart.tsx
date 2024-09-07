@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Dimensions, Pressable, View, Text, ActivityIndicator } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 import { useHeaderHeight } from '@react-navigation/elements';
@@ -11,7 +11,7 @@ import { Sizes } from '@/constants/Sizes';
 import { Menu } from 'lucide-react-native';
 import { CurveType } from 'gifted-charts-core';
 import LineChartFilters from './LineChartFilterActionSheet';
-import { ChartData, formatLineChartData } from '../helpers/formatLineChartData';
+import { LineChartData, formatLineChartData } from '../helpers/formatLineChartData';
 
 interface EmotionLineChartProps {
   data: EmotionCountsOverTime;
@@ -38,19 +38,12 @@ export default function EmotionLineChart({
   const chartWidth: number = width / 1.3;
 
   // process initial data - if no filteredData default of happy/sad on weekly timeframe
-  const initialChartData: EmotionCountsOverTime = filteredData || data;
-  const initialProcessedData = formatLineChartData(initialChartData);
-  const [chartData, setChartData] = useState<ChartData>(initialProcessedData);
+  const initialData: EmotionCountsOverTime = filteredData || data;
+  const initialProcessedData = formatLineChartData(initialData);
+  const [lineChartData, setLineChartData] =
+    useState<LineChartData>(initialProcessedData);
 
   const activeEmotions: string[] = Object.keys(filteredData || data); // send to LineChartFilters to display emotions already selected
-  // update chart data when new filters are selected - called after handleFetchFilteredData
-  useEffect(() => {
-    if (filteredData) {
-      const updatedChartData = formatLineChartData(filteredData);
-      setChartData(updatedChartData);
-      setIsLoading(false);
-    }
-  }, [filteredData]);
 
   // recieves filtered data from LineChartFilters component, updates state and label
   const handleFetchFilteredData = (
@@ -58,7 +51,10 @@ export default function EmotionLineChart({
     filters: { emotions: string[]; timeframe: string }
   ) => {
     setIsLoading(true);
+    const updatedChartData = formatLineChartData(newData);
+    setLineChartData(updatedChartData);
     setFilteredData(newData);
+    setIsLoading(false);
     switch (filters.timeframe) {
       case '7d':
         setTimeframeLabel('Past 7 Days');
@@ -87,20 +83,20 @@ export default function EmotionLineChart({
         {isLoading && <ActivityIndicator />}
         {(filteredData || data) && (
           <LineChart
-            key={JSON.stringify(chartData.dataSet)} // key forces a re-render when data changes fixes a bug where the chart lines wouldnt update
+            key={JSON.stringify(lineChartData.dataSet)} // key forces a re-render when data changes fixes a bug where the chart lines wouldnt update
             areaChart={Object.keys(filteredData || data).length < 4} // area chart looks better, but when too many lines data is hard to read
             curved
             curveType={CurveType.QUADRATIC}
             curvature={0.2}
             isAnimated
-            xAxisLabelTexts={chartData.xAxisLabels}
+            xAxisLabelTexts={lineChartData.xAxisLabels}
             yAxisThickness={0}
             xAxisThickness={0}
             height={chartHeight}
             width={chartWidth}
-            maxValue={chartData.maxValue}
-            noOfSections={chartData.noOfSections}
-            stepValue={chartData.stepValue}
+            maxValue={lineChartData.maxValue}
+            noOfSections={lineChartData.noOfSections}
+            stepValue={lineChartData.stepValue}
             showVerticalLines
             nestedScrollEnabled
             yAxisOffset={0}
@@ -108,7 +104,7 @@ export default function EmotionLineChart({
             verticalLinesUptoDataPoint
             scrollToEnd
             onDataChangeAnimationDuration={2000}
-            dataSet={chartData.dataSet}
+            dataSet={lineChartData.dataSet}
             startOpacity={0.6}
             endOpacity={0.3}
           />

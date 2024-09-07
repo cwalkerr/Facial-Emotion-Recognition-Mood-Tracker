@@ -14,7 +14,7 @@ export interface DataSetItem {
 }
 
 // represents the data that the chart needs to render arr of data sets, labels('dd/MM') , max y axis value etc
-export interface ChartData {
+export interface LineChartData {
   dataSet: DataSetItem[];
   xAxisLabels: string[];
   maxValue: number;
@@ -25,7 +25,7 @@ export interface ChartData {
 /*
  * process the data from the api into the format needed for the chart
  */
-export const formatLineChartData = (data: EmotionCountsOverTime): ChartData => {
+export const formatLineChartData = (data: EmotionCountsOverTime): LineChartData => {
   if (!data) throw new Error('Data is requrired to process chart data');
 
   // create the data sets for each emotion present

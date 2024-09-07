@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -55,10 +55,9 @@ export default function LineChartFilters({
   onFetchFilteredData,
   timeframeLabel,
 }: LineChartFilterProps): React.JSX.Element {
-  const [selectedEmotions, setSelectedEmotions] =
-    React.useState<string[]>(activeEmotions); // defaults to the filtered emotions passed from the parent component, always starts the same
-  const [timeframe, setTimeframe] = React.useState<string>('30d'); // default to 30 days
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>(activeEmotions); // defaults to the filtered emotions passed from the parent component, always starts the same
+  const [timeframe, setTimeframe] = useState<string>('30d'); // default to 30 days
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { getToken, userId } = useAuth();
 
   // set the timeframe based on the label
