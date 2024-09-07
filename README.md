@@ -68,7 +68,7 @@ This project leverages facial emotion recognition using a Convolutional Neural N
   - **`endpoints/`**: Contains the endpoints of the API
   - **`services/`**: Includes
     - **`/celery`** for Notification task scheduling files
-    - **`forwardToServing.py`** sends images to CNN for prediction
+    - **`forward_to_serving.py`** sends images to CNN for prediction
 
 - **`mobile-client/`**: Contains all the frontend code
   - **`app/`**: Contains all route and \_layout files.
@@ -85,4 +85,4 @@ This project leverages facial emotion recognition using a Convolutional Neural N
 - Open the app on your mobile device using Expo.
 - Take a selfie when prompted or as needed.
 - The app will automatically detect your emotion and record it.
-- View your mood history tabs screens!
+- View your mood history in the tabs screens!

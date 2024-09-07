@@ -21,7 +21,7 @@ class ReadingData(BaseModel):
 @router.post("/readings")
 async def upload_reading( 
     request: ReadingData,
-    # token: HTTPAuthorizationCredentials = Depends(security)
+    token: HTTPAuthorizationCredentials = Depends(security)
 ) -> JSONResponse:
     """
     Upload a new reading.
@@ -46,9 +46,9 @@ async def upload_reading(
     """
     try :
         # verify token
-        # verification = verify_token(token.credentials)
-        # if (verification["valid"] == False):
-        #     return JSONResponse(content={"message": verification["message"]}, status_code=401)
+        verification = verify_token(token.credentials)
+        if (verification["valid"] == False):
+            return JSONResponse(content={"message": verification["message"]}, status_code=401)
         # save reading to db
         async with Session() as session:
             response, status_code = await insert_reading(session, request)
