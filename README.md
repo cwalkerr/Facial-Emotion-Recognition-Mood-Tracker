@@ -86,3 +86,10 @@ This project leverages facial emotion recognition using a Convolutional Neural N
 - Take a selfie when prompted or as needed.
 - The app will automatically detect your emotion and record it.
 - View your mood history in the tabs screens!
+
+## Screenshots
+
+![Home Page Screenshot](appScreenshots/homePage.jpg)
+![Line Chart Screenshot](appScreenshots/lineChart.jpg)
+![Results Page Screenshot](appScreenshots/resultsPage.jpg)
+![Results Page Screenshot 2](appScreenshots/resultsPage2.jpg)
