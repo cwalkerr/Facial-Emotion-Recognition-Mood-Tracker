@@ -89,7 +89,16 @@ This project leverages facial emotion recognition using a Convolutional Neural N
 
 ## Screenshots
 
-<img src="appScreenshots/homePage.jpg" alt="Home Page Screenshot" width="600">
-<img src="appScreenshots/lineChart.jpg" alt="Line Chart Screenshot" width="600">
-<img src="appScreenshots/resultsPage.jpg" alt="Results Page Screenshot" width="600">
-<img src="appScreenshots/resultsPage2.jpg" alt="Results Page Screenshot 2" width="600">
+<div style="display: flex; justify-content: space-around;">
+
+  <img src="appScreenshots/homePage.jpg" alt="Home Page Screenshot" width="400">
+  <img src="appScreenshots/lineChart.jpg" alt="Line Chart Screenshot" width="400">
+
+</div>
+
+<div style="display: flex; justify-content: space-around; margin-top: 10px;">
+
+  <img src="appScreenshots/resultsPage.jpg" alt="Results Page Screenshot" width="400">
+  <img src="appScreenshots/resultsPage2.jpg" alt="Results Page Screenshot 2" width="400">
+
+</div>
