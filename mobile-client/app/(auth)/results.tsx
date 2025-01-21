@@ -36,15 +36,9 @@ export default function Results(): React.JSX.Element {
   const [isAccurate, setIsAccurate] = useState<boolean | null>(null);
   const [location, setLocation] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
-  const [showCarousel, setShowCarousel] = useState<boolean>(false);
   const { getToken, userId } = useAuth();
   const { userData, setUserData } = useUserDataContext();
-
-  // shows the carousel that the user uses to select the correct emotion if the user selects that the emotion is not accurate
-  useEffect(() => {
-    if (isAccurate === false) setShowCarousel(true);
-  }, [isAccurate]);
-
+  
   // set a single location at a time allowed active across all location buttons
   const toggleLocation = (button: string) => {
     location === button ? setLocation(null) : setLocation(button);
@@ -110,7 +104,7 @@ export default function Results(): React.JSX.Element {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View className="flex-1 items-center">
           <View className="items-center justify-start mt-16">
-            {showCarousel ? (
+            {isAccurate === null ? (
               <EmojiCarousel initialEmotion={emotion} onSnapToItem={setEmotion} />
             ) : (
               getEmoji({
